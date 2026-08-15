@@ -1,40 +1,42 @@
-const input = document.getElementById("input");
-const output = document.getElementById("output");
+"use strict";
 
-const encodeButton = document.getElementById("encode");
-const clearButton = document.getElementById("clear");
-const copyButton = document.getElementById("copy");
+var input = document.getElementById("input");
+var output = document.getElementById("output");
+var encodeButton = document.getElementById("encode");
+var clearButton = document.getElementById("clear");
+var copyButton = document.getElementById("copy");
 
 function encodeToHex(text) {
-    let result = "";
-    for (const character of text) {
-        const code = character.codePointAt(0);
-        if (code <= 0xFF) {
-            result += "\\x" + code.toString(16).padStart(2, "0");
-        } else {
-            result += "\\u{" + code.toString(16) + "}";
-        }
+    var result = "";
+
+    for (var i = 0; i < text.length; i++) {
+        var code = text.charCodeAt(i);
+
+        result += "\\x" + code.toString(16).padStart(2, "0");
     }
+
     return result;
 }
 
-encodeButton.addEventListener("click", () => {
+encodeButton.addEventListener("click", function () {
     output.value = encodeToHex(input.value);
 });
 
-clearButton.addEventListener("click", () => {
+clearButton.addEventListener("click", function () {
     input.value = "";
     output.value = "";
 });
-copyButton.addEventListener("click", async () => {
-    if (!output.value) return;
 
-    await navigator.clipboard.writeText(output.value);
+copyButton.addEventListener("click", function () {
+    if (output.value === "") {
+        return;
+    }
 
-    const originalText = copyButton.textContent;
-    copyButton.textContent = "Copied!";
+    navigator.clipboard.writeText(output.value).then(function () {
+        copyButton.textContent = "Copied!";
 
-    setTimeout(() => {
-        copyButton.textContent = originalText;
-    }, 1200);
+        setTimeout(function () {
+            copyButton.textContent = "Copy";
+        }, 1200);
+    });
 });
