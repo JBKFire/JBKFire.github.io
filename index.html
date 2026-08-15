@@ -1,14 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>test1</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex Encoder</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>test2</h1>
-    <button id="myButton">btn</button>
-    <p id="hi"></p>
+    <div class="container">
+        <h1>Hex Encoder</h1>
+        <p class="subtitle">Convert text into <code>\xNN</code> hexadecimal strings.</p>
+
+        <label for="input">Input</label>
+        <textarea id="input" placeholder="Enter text here..."></textarea>
+
+        <div class="buttons">
+            <button id="encode">Encode</button>
+            <button id="clear" class="secondary">Clear</button>
+        </div>
+
+        <label for="output">Output</label>
+        <div class="output-container">
+            <textarea id="output" readonly placeholder="Your hexadecimal output will appear here..."></textarea>
+            <button id="copy" class="copy-button">Copy</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
