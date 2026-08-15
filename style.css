@@ -4,14 +4,15 @@
 
 body {
     margin: 0;
+    padding: 20px;
     min-height: 100vh;
+
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
 
     font-family: Arial, sans-serif;
-    background: #0f1117;
+    background-color: #0f1117;
     color: #ffffff;
 }
 
@@ -20,7 +21,7 @@ body {
     max-width: 750px;
     padding: 35px;
 
-    background: #181b24;
+    background-color: #181b24;
     border: 1px solid #292e3a;
     border-radius: 16px;
 
@@ -57,7 +58,7 @@ textarea {
     border: 1px solid #343a49;
     border-radius: 10px;
 
-    background: #10131a;
+    background-color: #10131a;
     color: #ffffff;
 
     font-family: Consolas, monospace;
@@ -82,23 +83,21 @@ button {
     border: none;
     border-radius: 8px;
 
-    background: #6366f1;
-    color: white;
+    background-color: #6366f1;
+    color: #ffffff;
 
     font-size: 15px;
     font-weight: bold;
 
     cursor: pointer;
-    transition: 0.2s;
 }
 
 button:hover {
-    transform: translateY(-1px);
     opacity: 0.9;
 }
 
 .secondary {
-    background: #343a49;
+    background-color: #343a49;
 }
 
 .output-container {
