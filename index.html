@@ -7,18 +7,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root {
-  --panel: #c6c6c6;
-  --panel-dark: #8b8b8b;
-  --bevel-hi: #ffffff;
-  --bevel-lo: #545454;
-  --ink: #363636;
-  --ink-soft: #5c5c5c;
-  --hover: #ffff55;
-  --accent: #55ff55;
-  --accent2: #5cd6ff;
-  --danger: #ff5555;
-  --world-a: #0c1712;
-  --world-b: #0a1015;
+  --panel: #171b26;
+  --panel-dark: #202638;
+  --bevel-hi: #2f3952;
+  --bevel-lo: #0a0d14;
+  --ink: #e8eefc;
+  --ink-soft: #8e9ab3;
+  --hover: #9bdcff;
+  --accent: #60a5fa;
+  --accent2: #38bdf8;
+  --danger: #f87171;
+  --world-a: #0b1220;
+  --world-b: #070b13;
   --font: "Courier New", Consolas, monospace;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,42 +29,44 @@ body {
   font-family: var(--font);
   color: var(--ink);
   background:
-    repeating-conic-gradient(var(--world-a) 0% 25%, var(--world-b) 0% 50%) 0 0 / 34px 34px;
+    radial-gradient(circle at 50% -10%, rgba(37, 99, 235, 0.16), transparent 35%),
+    repeating-linear-gradient(135deg, rgba(56, 189, 248, 0.025) 0 1px, transparent 1px 34px),
+    linear-gradient(180deg, var(--world-a), var(--world-b));
 }
 
 .mc-panel {
-  background: var(--panel);
-  border: 2px solid #1c1c1c;
-  box-shadow: inset 2px 2px 0 var(--bevel-hi), inset -2px -2px 0 var(--bevel-lo);
+  background: linear-gradient(180deg, #1b2030, #131722);
+  border: 1px solid #29334a;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255,255,255,0.035);
   border-radius: 1px;
 }
 
 .mc-btn {
   font-family: var(--font);
-  background: var(--panel-dark);
-  color: #fff;
-  border: 2px solid #1c1c1c;
-  box-shadow: inset 1px 1px 0 var(--bevel-hi), inset -1px -1px 0 #3a3a3a;
-  text-shadow: 1px 1px 0 #2b2b2b;
+  background: #252d42;
+  color: #eaf2ff;
+  border: 1px solid #3a4764;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 12px rgba(0,0,0,0.18);
+  text-shadow: 0 1px 2px #000;
   padding: 0.4rem 0.8rem;
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.02em;
 }
-.mc-btn:hover { color: var(--hover); }
-.mc-btn:active { box-shadow: inset -1px -1px 0 var(--bevel-hi), inset 1px 1px 0 #3a3a3a; }
+.mc-btn:hover { color: var(--hover); border-color: #4f8cff; background: #2a3650; }
+.mc-btn:active { transform: translateY(1px); }
 .mc-btn:disabled { opacity: 0.45; cursor: not-allowed; color: #ddd !important; }
-.mc-btn.danger { background: #7a2e2e; }
+.mc-btn.danger { background: #5a2630; border-color: #7c3342; }
 .mc-btn.danger:hover { color: #ffb3b3; }
 .mc-btn.small { padding: 0.25rem 0.5rem; font-size: 0.72rem; }
 
 input[type=text], input[type=number] {
   font-family: var(--font);
-  background: #373737;
-  color: #eaeaea;
-  border: 2px solid #1c1c1c;
-  box-shadow: inset 1px 1px 0 #000, inset -1px -1px 0 #4a4a4a;
+  background: #0c111c;
+  color: #eef5ff;
+  border: 1px solid #33415d;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.45);
   padding: 0.35rem 0.45rem;
   font-size: 0.82rem;
 }
@@ -76,8 +78,9 @@ header {
   align-items: baseline;
   gap: 0.75rem;
   flex-wrap: wrap;
-  background: #1c1c1c;
-  border-bottom: 3px solid #000;
+  background: rgba(9, 14, 24, 0.96);
+  border-bottom: 1px solid #24324a;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.22);
 }
 header h1 {
   font-size: 1.05rem;
@@ -130,12 +133,12 @@ aside > .mc-panel { padding: 0.85rem; }
 .chunk-list { display: flex; flex-direction: column; gap: 0.3rem; max-height: 220px; overflow-y: auto; }
 .chunk-item {
   display: flex; align-items: center; justify-content: space-between;
-  background: var(--panel-dark); border: 2px solid #1c1c1c;
-  box-shadow: inset 1px 1px 0 var(--bevel-hi), inset -1px -1px 0 #3a3a3a;
+  background: #20283a; border: 1px solid #34415c;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
   padding: 0.35rem 0.5rem; cursor: pointer; font-size: 0.76rem; color: #fff; text-shadow: 1px 1px 0 #2b2b2b;
 }
 .chunk-item:hover { color: var(--hover); }
-.chunk-item.selected { background: #3d6b3d; }
+.chunk-item.selected { background: linear-gradient(90deg, #174e7a, #1f3151); border-color: #3b82f6; }
 .chunk-item button {
   background: none; border: none; color: #eee; cursor: pointer; font-size: 0.85rem; line-height: 1; padding: 0 0.15rem;
 }
@@ -144,9 +147,9 @@ aside > .mc-panel { padding: 0.85rem; }
 .btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
 .notice {
-  font-size: 0.72rem; line-height: 1.45; color: #3a3a1a; background: #d8d08a;
-  border: 2px solid #1c1c1c; padding: 0.55rem 0.65rem;
-  box-shadow: inset 1px 1px 0 #fff8, inset -1px -1px 0 #0002;
+  font-size: 0.72rem; line-height: 1.45; color: #b9d8ff; background: #101b2d;
+  border: 1px solid #28466f; padding: 0.55rem 0.65rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .download-bar { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
@@ -183,7 +186,7 @@ main.editor {
 }
 .panel-3d-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .panel-3d-head .section-title { border: none; margin: 0; padding: 0; }
-#canvas3dWrap { position: relative; background: #05080a; border: 2px solid #1c1c1c; height: 420px; }
+#canvas3dWrap { position: relative; background: #050914; border: 1px solid #263754; height: 420px; }
 #canvas3d { width: 100%; height: 100%; display: block; cursor: grab; }
 #canvas3d:active { cursor: grabbing; }
 .hud3d {
@@ -201,7 +204,23 @@ main.editor {
   align-items: center;
 }
 .panel-2d .section-title { align-self: stretch; }
-#gridCanvas { border: 2px solid #1c1c1c; cursor: crosshair; image-rendering: pixelated; }
+#gridCanvas { border: 1px solid #263754; cursor: crosshair; image-rendering: pixelated; background:#080d17; }
+
+
+
+.block-picker { display:flex; flex-direction:column; gap:0.55rem; }
+.block-picker-head { display:flex; gap:0.45rem; align-items:center; }
+.block-picker-head input { flex:1; min-width:0; }
+.block-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.35rem; max-height:260px; overflow:auto; padding-right:2px; }
+.block-option { display:flex; align-items:center; gap:0.45rem; min-width:0; padding:0.35rem; background:#0d1421; border:1px solid #263754; color:#dce9ff; cursor:pointer; border-radius:4px; }
+.block-option:hover { border-color:#38bdf8; background:#111e31; }
+.block-option.selected { border-color:#60a5fa; box-shadow:0 0 0 1px #2563eb inset; background:#102541; }
+.block-option img { width:28px; height:28px; image-rendering:pixelated; object-fit:cover; flex:none; background:#111827; }
+.block-option span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.68rem; }
+.block-option small { color:#70819d; margin-left:auto; }
+.block-status { color:#7dd3fc; font-size:0.66rem; min-height:1em; }
+.block-id-row { display:grid; grid-template-columns:1fr auto; gap:0.4rem; align-items:end; }
+#blockNameDisplay { color:#dce9ff; font-size:0.74rem; min-height:1.1rem; }
 
 .empty-state {
   flex: 1; display: flex; align-items: center; justify-content: center;
@@ -213,7 +232,8 @@ main.editor {
 
 <header>
   <h1>Bloxdschem Editor</h1>
-  <p>Open a .bloxdschem file, preview it in 3D, paint blocks, save it back out.</p>
+  <p>Open a .bloxdschem file, preview it in textured 3D, paint blocks by name, save it back out.</p>
+  <span style="margin-left:auto;color:#5d789f;font-size:.68rem;">BLOXDY ASSET PACK · BLUE/BLACK EDITION</span>
 </header>
 
 <div class="layout">
@@ -238,6 +258,16 @@ main.editor {
         <div class="stat-line"><span>Size (blocks)</span><span id="statSize">-</span></div>
         <div class="stat-line"><span>Chunks</span><span id="statChunks">-</span></div>
         <div class="stat-line"><span>Non-air blocks</span><span id="statBlocks">-</span></div>
+      </div>
+
+      <div class="mc-panel">
+        <h2 class="section-title">Block palette</h2>
+        <div class="block-picker">
+          <div class="block-picker-head">
+            <input type="text" id="sidebarBlockSearch" placeholder="Search blocks…" autocomplete="off" />
+          </div>
+          <div class="block-list" id="blockList"></div>
+        </div>
       </div>
 
       <div class="mc-panel">
@@ -274,11 +304,16 @@ main.editor {
 
     <main class="editor">
       <div class="toolbar mc-panel" id="toolbar" style="display:none;">
-        <div class="field">
-          <label for="blockIdInput">Paint block ID</label>
-          <input type="number" id="blockIdInput" value="1" min="0" />
+        <div class="field" style="min-width:280px; flex:1 1 320px;">
+          <label>Paint block</label>
+          <div class="block-id-row">
+            <input type="text" id="blockSearch" placeholder="Search block name…" autocomplete="off" />
+            <input type="number" id="blockIdInput" value="1" min="0" title="Block ID" style="width:82px;" />
+          </div>
+          <div id="blockNameDisplay">Loading block names…</div>
+          <div class="block-status" id="blockStatus"></div>
         </div>
-        <div class="swatch" id="paintSwatch"></div>
+        <div class="swatch" id="paintSwatch" title="Selected block texture"></div>
         <div class="layer-nav">
           <button class="mc-btn" id="layerDown">-</button>
           <div class="field" style="min-width:64px;">
@@ -363,6 +398,18 @@ function concatBuffers(bufs) {
 }
 
 const CHUNK_BLOCKS = 32 * 32 * 32; // 32768
+
+// Live references to the public Bloxd resources. The default pack JSON contains
+// the actual PNG data, while the generated block list is kept in block-id order.
+const DEFAULT_TEXTURE_PACK_URL = 'https://raw.githubusercontent.com/Bloxdy/texture-packs/main/_json/default.json';
+const BLOCK_ID_LIST_URL = 'https://gist.githubusercontent.com/owcer/ac2ef5a3140ca3207b5bfc9bed550340/raw/e927d68e22a2b98dda03b3dbdb8f73a5ab1fd322/bloxdbetterdocs.txt';
+let texturePack = {};
+let blockNames = ['Air'];
+let blockSearchIndex = [];
+let textureCache = new Map();
+let materialCache = new Map();
+let assetsReady = false;
+let assetsError = '';
 
 function decodeBlocks(bytes) {
   const arr = new Uint16Array(CHUNK_BLOCKS);
@@ -463,6 +510,177 @@ function buildSchem(state) {
   }
   parts.push(state.footer);
   return concatBuffers(parts);
+}
+
+function normalizeTextureKey(name) {
+  let n = String(name || '').split('|')[0].trim();
+  if (!n || n === 'Air' || n === 'Unloaded') return null;
+  n = n.replace(/^_/, '');
+  const aliases = {
+    'Grass Block': 'grass_block_side',
+    'Maple Log': 'maple_log',
+    'Pine Log': 'pine_log',
+    'Plum Log': 'plum_log',
+    'Cedar Log': 'cedar_log',
+    'Aspen Log': 'aspen_log',
+    'Jungle Log': 'jungle_log',
+    'Pear Log': 'pear_log',
+    'Spectral Log': 'spectral_log',
+    'Barkless Maple Log': 'stripped_maple_log',
+    'Barkless Pine Log': 'stripped_pine_log',
+    'Barkless Plum Log': 'stripped_plum_log',
+    'Barkless Cedar Log': 'stripped_cedar_log',
+    'Barkless Aspen Log': 'stripped_aspen_log',
+    'Barkless Jungle Log': 'stripped_jungle_log',
+    'Barkless Pear Log': 'stripped_pear_log',
+    'Stone Bricks': 'stonebrick',
+    'Mossy Stone Bricks': 'stonebrick_mossy',
+    'Cracked Stone Bricks': 'stonebrick_cracked',
+    'Chiseled Block of Quartz': 'quartz_block_chiseled',
+    'Block of Quartz': 'quartz_block',
+    'Block of Diamond': 'diamond_block',
+    'Block of Emerald': 'emerald_block',
+    'Block of Iron': 'iron_block',
+    'Block of Gold': 'gold_block',
+    'Block of Coal': 'coal_block',
+    'Block of Lapis Lazuli': 'lapis_block',
+    'Water': 'water',
+    'Lava': 'lava',
+    'Glass': 'glass',
+    'White Wool': 'wool_colored_white',
+    'Light Gray Wool': 'wool_colored_light_grey'
+  };
+  if (aliases[n]) return aliases[n];
+  let key = n.toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  key = key.replace(/_stage\d+$/, m => m);
+  return key;
+}
+
+function textureCandidates(name) {
+  const root = String(name || '').split('|')[0].trim();
+  const k = normalizeTextureKey(root);
+  const out = [];
+  if (k) out.push(k);
+  if (root.includes('Wool')) {
+    const color = root.replace(/ Wool$/,'').toLowerCase().replace(/ /g,'_').replace('light_grey','light_gray');
+    out.push('wool_colored_' + color);
+  }
+  if (root === 'Grass Block') out.push('grass_block_side','grass_top');
+  if (/Slab$/.test(root)) out.push(k?.replace(/_slab$/,'_slab_side'), k?.replace(/_slab$/,'_slab_top'));
+  if (/Leaves$/.test(root)) out.push(k + '_side');
+  if (/Log$/.test(root)) out.push(k, k?.replace(/^barkless_/,'stripped_'));
+  return [...new Set(out.filter(Boolean))];
+}
+
+function blockDisplayName(id) {
+  if (id === 0) return 'Air';
+  return blockNames[id] || `Unknown block #${id}`;
+}
+
+async function loadEditorAssets() {
+  const status = document.getElementById('blockStatus');
+  try {
+    status.textContent = 'Loading Bloxd textures + block names…';
+    const [packRes, namesRes] = await Promise.all([
+      fetch(DEFAULT_TEXTURE_PACK_URL, { cache: 'force-cache' }),
+      fetch(BLOCK_ID_LIST_URL, { cache: 'no-cache' })
+    ]);
+    if (!packRes.ok || !namesRes.ok) throw new Error('Could not fetch the Bloxd asset references.');
+    const pack = await packRes.json();
+    texturePack = pack.textures || {};
+    const txt = await namesRes.text();
+    const marker = 'File: ListOfBlocks.md';
+    const start = txt.indexOf(marker);
+    const section = start >= 0 ? txt.slice(start) : txt;
+    const match = section.match(/```\\s*([\\s\\S]*?)```/);
+    const lines = (match ? match[1] : section).split(/\\r?\\n/).map(v => v.trim()).filter(Boolean);
+    // The source states this generated list is in block-id order.
+    blockNames = ['Air', ...lines.filter(v => !/^\\[[0-9T:-]+\\]/.test(v)).map(v => v.replace(/^\\[[^\\]]+\\]\\s*/, ''))];
+    blockSearchIndex = blockNames.map((name, id) => ({ id, name, lower: name.toLowerCase() }));
+    assetsReady = true;
+    status.textContent = `Loaded ${Object.keys(texturePack).length.toLocaleString()} textures · ${Math.max(0, blockNames.length - 1).toLocaleString()} block names`;
+    renderBlockPalette();
+    updateBlockUI();
+    refresh3D(false);
+  } catch (err) {
+    assetsError = err.message || String(err);
+    status.textContent = 'Asset loading failed — using generated colors.';
+    blockNames = ['Air'];
+    blockSearchIndex = [];
+    renderBlockPalette();
+    updateBlockUI();
+  }
+}
+
+function getTextureDataForId(id) {
+  const name = blockDisplayName(id);
+  for (const key of textureCandidates(name)) {
+    if (texturePack[key]) return texturePack[key];
+  }
+  return null;
+}
+
+function getTextureForId(id) {
+  if (!assetsReady || id === 0) return null;
+  if (textureCache.has(id)) return textureCache.get(id);
+  const data = getTextureDataForId(id);
+  if (!data) return null;
+  const tex = new THREE.TextureLoader().load(data, () => { tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; tex.colorSpace = THREE.SRGBColorSpace; render3D(); });
+  tex.magFilter = THREE.NearestFilter;
+  tex.minFilter = THREE.NearestFilter;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  textureCache.set(id, tex);
+  return tex;
+}
+
+function makeBlockMaterial(id) {
+  if (materialCache.has(id)) return materialCache.get(id);
+  const tex = getTextureForId(id);
+  const mat = new THREE.MeshPhongMaterial({ color: colorForId(id) || '#888888', flatShading: true, map: tex || null });
+  materialCache.set(id, mat);
+  return mat;
+}
+
+function updateBlockUI() {
+  const id = Math.max(0, parseInt(blockIdInput.value, 10) || 0);
+  document.getElementById('blockNameDisplay').textContent = `${blockDisplayName(id)} · ID ${id}`;
+  updateSwatch();
+  document.querySelectorAll('.block-option').forEach(el => el.classList.toggle('selected', Number(el.dataset.id) === id));
+}
+
+function renderBlockPalette() {
+  const list = document.getElementById('blockList');
+  if (!list) return;
+  const query = (document.getElementById('sidebarBlockSearch')?.value || document.getElementById('blockSearch')?.value || '').trim().toLowerCase();
+  const matches = blockSearchIndex.filter(x => !query || x.lower.includes(query)).slice(0, 160);
+  list.innerHTML = '';
+  for (const item of matches) {
+    if (item.id === 0) continue;
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'block-option';
+    el.dataset.id = item.id;
+    const img = document.createElement('img');
+    const data = getTextureDataForId(item.id);
+    if (data) img.src = data;
+    const span = document.createElement('span');
+    span.textContent = item.name;
+    const small = document.createElement('small');
+    small.textContent = item.id;
+    el.append(img, span, small);
+    el.onclick = () => setPaintBlock(item.id);
+    list.appendChild(el);
+  }
+  updateBlockUI();
+}
+
+function setPaintBlock(id) {
+  blockIdInput.value = Math.max(0, id | 0);
+  updateBlockUI();
+  renderBlockPalette();
 }
 
 function colorForId(id) {
@@ -624,15 +842,30 @@ function renderChunkSelection() {
   layerInput.value = currentLayer;
   layerSlider.value = currentLayer;
   drawGrid();
-  updateSwatch();
+  updateBlockUI();
 }
 
 function updateSwatch() {
   const id = parseInt(blockIdInput.value, 10) || 0;
-  const col = colorForId(id);
-  paintSwatch.style.background = col || 'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 50% / 8px 8px';
+  const data = getTextureDataForId(id);
+  if (data) {
+    paintSwatch.style.background = `url("${data}") center / cover`;
+    paintSwatch.style.imageRendering = 'pixelated';
+  } else {
+    const col = colorForId(id);
+    paintSwatch.style.background = col || 'repeating-conic-gradient(#1f2937 0% 25%, #0f172a 0% 50%) 50% / 8px 8px';
+  }
 }
-blockIdInput.addEventListener('input', updateSwatch);
+blockIdInput.addEventListener('input', updateBlockUI);
+blockIdInput.addEventListener('change', () => { updateBlockUI(); renderBlockPalette(); });
+document.getElementById('blockSearch').addEventListener('input', e => {
+  document.getElementById('sidebarBlockSearch').value = e.target.value;
+  renderBlockPalette();
+});
+document.getElementById('sidebarBlockSearch').addEventListener('input', e => {
+  document.getElementById('blockSearch').value = e.target.value;
+  renderBlockPalette();
+});
 
 function setLayer(n) {
   currentLayer = Math.max(0, Math.min(31, n));
@@ -747,7 +980,7 @@ function initThree() {
   threeReady = true;
   const canvas3d = document.getElementById('canvas3d');
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x05080a);
+  scene.background = new THREE.Color(0x050914);
 
   camera = new THREE.PerspectiveCamera(50, 1, 0.1, 2000);
 
@@ -763,7 +996,7 @@ function initThree() {
   dir2.position.set(-40, -20, -60);
   scene.add(dir2);
 
-  const grid = new THREE.GridHelper(256, 32, 0x3a5a3a, 0x223322);
+  const grid = new THREE.GridHelper(256, 32, 0x24527a, 0x10253a);
   scene.add(grid);
 
   blockGroup = new THREE.Group();
@@ -822,7 +1055,7 @@ function refresh3D(fitCamera) {
   if (!threeReady) return;
   while (blockGroup.children.length) {
     const m = blockGroup.children.pop();
-    m.material.dispose();
+    // Materials/textures are cached per block id and intentionally retained.
   }
   if (!schem || !schem.chunks.length) {
     document.getElementById('stat3D').textContent = '0';
@@ -859,7 +1092,7 @@ function refresh3D(fitCamera) {
   const dummy = new THREE.Object3D();
   for (const [id, coords] of byId.entries()) {
     const count = coords.length / 3;
-    const mat = new THREE.MeshPhongMaterial({ color: colorForId(id) || '#888888', flatShading: true });
+    const mat = makeBlockMaterial(id);
     const mesh = new THREE.InstancedMesh(unitBoxGeometry, mat, count);
     for (let i = 0; i < count; i++) {
       dummy.position.set(coords[i * 3] + 0.5, coords[i * 3 + 1] + 0.5, coords[i * 3 + 2] + 0.5);
