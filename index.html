@@ -1,49 +1,700 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A simple text to hexadecimal encoder.">
-    <title>Hex Encoder</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bloxdschem Editor</title>
+<style>
+:root {
+  --bg-main: #12161d;
+  --bg-panel: #1a2028;
+  --bg-panel-alt: #212934;
+  --accent: #7cd992;
+  --accent-hover: #5fc47a;
+  --warn: #f2a65a;
+  --danger: #e2695f;
+  --text-main: #e9edf2;
+  --text-muted: #8a94a3;
+  --border: #2b3440;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+header h1 { font-size: 1.15rem; font-weight: 650; color: var(--accent); letter-spacing: -0.01em; }
+header p { color: var(--text-muted); font-size: 0.85rem; }
+
+.layout { display: flex; flex: 1; min-height: 0; }
+
+#dropScreen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.drop-card {
+  width: min(480px, 100%);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
+}
+.drop-card.drag { border-color: var(--accent); background: rgba(124,217,146,0.06); }
+.drop-card input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+.drop-sub { color: var(--text-muted); font-size: 0.85rem; }
+.drop-err { color: var(--danger); font-size: 0.85rem; margin-top: 0.9rem; }
+
+#editorScreen { display: none; flex: 1; min-height: 0; }
+#editorScreen.active { display: flex; }
+
+aside {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--bg-panel);
+  overflow-y: auto;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.6rem; }
+.field label { font-size: 0.75rem; color: var(--text-muted); }
+.field input {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.4rem 0.55rem;
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+.field input:focus { outline: none; border-color: var(--accent); }
+.row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+
+h2.section-title { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.5rem; }
+
+.stat-line { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.15rem 0; }
+.stat-line span:last-child { color: var(--text-main); font-family: var(--font-mono); }
+
+.chunk-list { display: flex; flex-direction: column; gap: 0.35rem; max-height: 260px; overflow-y: auto; }
+.chunk-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.45rem 0.6rem; cursor: pointer; font-family: var(--font-mono); font-size: 0.8rem;
+}
+.chunk-item:hover { border-color: var(--text-muted); }
+.chunk-item.selected { border-color: var(--accent); background: rgba(124,217,146,0.08); }
+.chunk-item button {
+  background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; line-height: 1;
+  padding: 0 0.2rem;
+}
+.chunk-item button:hover { color: var(--danger); }
+
+.btn {
+  background: var(--accent);
+  color: #0c130f;
+  border: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn:hover { background: var(--accent-hover); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.secondary { background: var(--bg-panel-alt); color: var(--text-main); border: 1px solid var(--border); }
+.btn.secondary:hover { border-color: var(--text-muted); background: var(--bg-panel-alt); }
+.btn.danger { background: var(--danger); color: #200807; }
+.btn.danger:hover { background: #c8564c; }
+.btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+main.editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 1.1rem 1.5rem;
+  gap: 1rem;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+}
+.toolbar .field { margin-bottom: 0; min-width: 90px; }
+.swatch { width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border); flex-shrink: 0; }
+.layer-nav { display: flex; align-items: center; gap: 0.4rem; }
+.layer-nav button { width: 28px; height: 28px; border-radius: 5px; }
+
+.canvas-wrap {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+}
+#gridCanvas { border-radius: 4px; cursor: crosshair; image-rendering: pixelated; }
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.notice {
+  background: rgba(242,166,90,0.08);
+  border: 1px solid rgba(242,166,90,0.35);
+  color: var(--warn);
+  font-size: 0.78rem;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  line-height: 1.4;
+}
+
+.download-bar {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.download-bar .field { margin-bottom: 0; flex: 1; min-width: 180px; }
+</style>
 </head>
-
 <body>
-    <main class="container">
-        <h1>Hex Encoder</h1>
 
-        <p class="subtitle">
-            Convert text into <code>\xNN</code> hexadecimal strings.
-        </p>
+<header>
+  <h1>Bloxdschem Editor</h1>
+  <p>Open a .bloxdschem file, paint blocks chunk by chunk, save it back out.</p>
+</header>
 
-        <label for="input">Input</label>
-        <textarea
-            id="input"
-            placeholder="Enter text here..."
-            aria-label="Text to encode"
-        ></textarea>
+<div class="layout">
 
-        <div class="buttons">
-            <button type="button" id="encode">Encode</button>
-            <button type="button" id="clear" class="secondary">Clear</button>
+  <div id="dropScreen">
+    <div class="drop-card" id="dropCard">
+      <input type="file" id="fileInput" accept=".bloxdschem" />
+      <div class="drop-title">Click or drop a .bloxdschem file here</div>
+      <div class="drop-sub">Nothing leaves your browser — parsing and editing happen locally.</div>
+      <div class="drop-err" id="dropErr"></div>
+    </div>
+  </div>
+
+  <div id="editorScreen">
+    <aside>
+      <div>
+        <h2 class="section-title">Schematic</h2>
+        <div class="field">
+          <label for="nameInput">Name</label>
+          <input type="text" id="nameInput" />
         </div>
+        <div class="stat-line"><span>Size (blocks)</span><span id="statSize">-</span></div>
+        <div class="stat-line"><span>Chunks</span><span id="statChunks">-</span></div>
+        <div class="stat-line"><span>Non-air blocks</span><span id="statBlocks">-</span></div>
+      </div>
 
-        <label for="output">Output</label>
-
-        <div class="output-container">
-            <textarea
-                id="output"
-                readonly
-                placeholder="Your hexadecimal output will appear here..."
-                aria-label="Hexadecimal output"
-            ></textarea>
-
-            <button type="button" id="copy" class="copy-button">
-                Copy
-            </button>
+      <div>
+        <h2 class="section-title">Chunks (32×32×32 each)</h2>
+        <div class="chunk-list" id="chunkList"></div>
+        <div class="row3" style="margin-top:0.6rem;">
+          <input type="number" id="addX" placeholder="x" />
+          <input type="number" id="addY" placeholder="y" />
+          <input type="number" id="addZ" placeholder="z" />
         </div>
+        <div class="btn-row" style="margin-top:0.5rem;">
+          <button class="btn secondary" id="btnAddChunk">Add chunk</button>
+        </div>
+      </div>
+
+      <div class="notice">
+        This format was reverse-engineered from an export tool, not from official docs. Block-array axis order is an assumption made here — edits are internally consistent (what you paint is what you get back), but double-check a small test file in-game before trusting a big edit.
+      </div>
+
+      <div style="margin-top:auto;">
+        <h2 class="section-title">Save</h2>
+        <div class="download-bar">
+          <div class="field">
+            <label for="fileNameInput">File name</label>
+            <input type="text" id="fileNameInput" />
+          </div>
+          <button class="btn" id="btnDownload">Download</button>
+        </div>
+        <div class="btn-row" style="margin-top:0.6rem;">
+          <button class="btn secondary" id="btnLoadAnother">Open a different file</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="editor">
+      <div class="toolbar" id="toolbar" style="display:none;">
+        <div class="field">
+          <label for="blockIdInput">Paint block ID</label>
+          <input type="number" id="blockIdInput" value="1" min="0" />
+        </div>
+        <div class="swatch" id="paintSwatch"></div>
+        <div class="layer-nav">
+          <button class="btn secondary" id="layerDown">-</button>
+          <div class="field" style="min-width:70px;">
+            <label for="layerInput">Layer (Y)</label>
+            <input type="number" id="layerInput" value="0" min="0" max="31" />
+          </div>
+          <button class="btn secondary" id="layerUp">+</button>
+        </div>
+        <input type="range" id="layerSlider" min="0" max="31" value="0" style="flex:1; min-width:120px;" />
+        <div class="btn-row">
+          <button class="btn secondary" id="btnFillLayer">Fill layer</button>
+          <button class="btn secondary" id="btnClearLayer">Clear layer</button>
+          <button class="btn secondary" id="btnFillChunk">Fill chunk</button>
+          <button class="btn danger" id="btnClearChunk">Clear chunk</button>
+        </div>
+      </div>
+
+      <div class="canvas-wrap" id="canvasWrap" style="display:none;">
+        <canvas id="gridCanvas" width="512" height="512"></canvas>
+      </div>
+
+      <div class="empty-state" id="emptyState">Select or add a chunk on the left to start editing.</div>
     </main>
+  </div>
 
-    <script src="script.js"></script>
+</div>
+
+<script>
+/* ---------- binary helpers (mirrors the .bloxdschem writer format) ---------- */
+
+function readVarintU(buf, off) {
+  let result = 0, shift = 0, i = off;
+  while (true) {
+    const b = buf[i++];
+    result |= (b & 0x7f) << shift;
+    if ((b & 0x80) === 0) break;
+    shift += 7;
+  }
+  return { value: result >>> 0, next: i };
+}
+function zigzagDecode32(n) { return (n >>> 1) ^ (-(n & 1)); }
+function readAvroInt32(buf, off) {
+  const r = readVarintU(buf, off);
+  return { value: zigzagDecode32(r.value), next: r.next };
+}
+function zigzagEncode32(n) { return (n << 1) ^ (n >> 31); }
+function avroInt32(n) {
+  let zz = zigzagEncode32(n) >>> 0;
+  const out = [];
+  while (zz >= 0x80) { out.push((zz & 0x7f) | 0x80); zz >>>= 7; }
+  out.push(zz & 0x7f);
+  return new Uint8Array(out);
+}
+function uvarint(n) {
+  const out = [];
+  while (n >= 0x80) { out.push((n & 0x7f) | 0x80); n >>>= 7; }
+  out.push(n & 0x7f);
+  return new Uint8Array(out);
+}
+function concatBuffers(bufs) {
+  const total = bufs.reduce((a, b) => a + b.length, 0);
+  const res = new Uint8Array(total);
+  let off = 0;
+  for (const b of bufs) { res.set(b, off); off += b.length; }
+  return res;
+}
+
+const CHUNK_BLOCKS = 32 * 32 * 32; // 32768
+
+function decodeBlocks(bytes) {
+  const arr = new Uint16Array(CHUNK_BLOCKS);
+  let p = 0, idx = 0;
+  while (p < bytes.length && idx < CHUNK_BLOCKS) {
+    const rr = readVarintU(bytes, p); const run = rr.value; p = rr.next;
+    if (p >= bytes.length && run === 0) break;
+    const rb = readVarintU(bytes, p); const id = rb.value; p = rb.next;
+    for (let k = 0; k < run && idx < CHUNK_BLOCKS; k++) arr[idx++] = id;
+  }
+  return arr;
+}
+
+function encodeBlocks(arr) {
+  const out = [];
+  let i = 0;
+  while (i < arr.length) {
+    let j = i + 1;
+    while (j < arr.length && arr[j] === arr[i]) j++;
+    out.push(uvarint(j - i));
+    out.push(uvarint(arr[i]));
+    i = j;
+  }
+  return concatBuffers(out);
+}
+
+// index scheme for the flat 32768 array: idx = y*1024 + z*32 + x
+function idxOf(x, y, z) { return y * 1024 + z * 32 + x; }
+
+/* ---------- parse ---------- */
+
+function parseSchem(buf) {
+  let off = 0;
+  const magic = buf.slice(0, 4); off = 4;
+  const nameLen = readAvroInt32(buf, off); off = nameLen.next;
+  if (nameLen.value < 0 || nameLen.value > 10000 || off + nameLen.value > buf.length) {
+    throw new Error('Could not read the schematic name — this may not be a .bloxdschem file, or uses a layout this editor does not recognize.');
+  }
+  const name = new TextDecoder().decode(buf.subarray(off, off + nameLen.value)); off += nameLen.value;
+
+  const ox = readAvroInt32(buf, off); off = ox.next;
+  const oy = readAvroInt32(buf, off); off = oy.next;
+  const oz = readAvroInt32(buf, off); off = oz.next;
+  const sx = readAvroInt32(buf, off); off = sx.next;
+  const sy = readAvroInt32(buf, off); off = sy.next;
+  const sz = readAvroInt32(buf, off); off = sz.next;
+
+  const count = readAvroInt32(buf, off); off = count.next;
+  if (count.value < 0 || count.value > 100000) {
+    throw new Error('Unexpected chunk count while parsing — this file may not match the expected format.');
+  }
+
+  const chunks = [];
+  for (let i = 0; i < count.value; i++) {
+    const cx = readAvroInt32(buf, off); off = cx.next;
+    const cy = readAvroInt32(buf, off); off = cy.next;
+    const cz = readAvroInt32(buf, off); off = cz.next;
+    const blen = readAvroInt32(buf, off); off = blen.next;
+    if (blen.value < 0 || off + blen.value > buf.length) {
+      throw new Error('A chunk block payload ran past the end of the file — parsing stopped early.');
+    }
+    const blockBytes = buf.subarray(off, off + blen.value); off += blen.value;
+    chunks.push({ x: cx.value, y: cy.value, z: cz.value, blocks: decodeBlocks(blockBytes) });
+  }
+
+  const footer = buf.slice(off); // preserve whatever trailing bytes the file has, unchanged
+  return {
+    magic, name,
+    offset: [ox.value, oy.value, oz.value],
+    size: [sx.value, sy.value, sz.value],
+    chunks, footer
+  };
+}
+
+function buildSchem(state) {
+  const parts = [];
+  parts.push(state.magic);
+  const nameBytes = new TextEncoder().encode(state.name);
+  parts.push(avroInt32(nameBytes.length), nameBytes);
+  parts.push(avroInt32(state.offset[0]), avroInt32(state.offset[1]), avroInt32(state.offset[2]));
+
+  let sizeX = 32, sizeY = 32, sizeZ = 32;
+  if (state.chunks.length) {
+    const minX = Math.min(...state.chunks.map(c => c.x)), maxX = Math.max(...state.chunks.map(c => c.x));
+    const minY = Math.min(...state.chunks.map(c => c.y)), maxY = Math.max(...state.chunks.map(c => c.y));
+    const minZ = Math.min(...state.chunks.map(c => c.z)), maxZ = Math.max(...state.chunks.map(c => c.z));
+    sizeX = (maxX - minX + 1) * 32;
+    sizeY = (maxY - minY + 1) * 32;
+    sizeZ = (maxZ - minZ + 1) * 32;
+  }
+  parts.push(avroInt32(sizeX), avroInt32(sizeY), avroInt32(sizeZ));
+
+  parts.push(avroInt32(state.chunks.length));
+  for (const c of state.chunks) {
+    const blockBytes = encodeBlocks(c.blocks);
+    parts.push(avroInt32(c.x), avroInt32(c.y), avroInt32(c.z));
+    parts.push(avroInt32(blockBytes.length), blockBytes);
+  }
+  parts.push(state.footer);
+  return concatBuffers(parts);
+}
+
+/* ---------- app state ---------- */
+
+let schem = null;
+let selectedChunk = -1;
+let currentLayer = 0;
+let painting = false;
+let eraseMode = false;
+
+const CELL = 16; // px per cell, 32 cells -> 512px canvas
+
+function colorForId(id) {
+  if (id === 0) return null; // air, drawn as empty/grid
+  let h = (id * 2654435761) >>> 0;
+  const hue = h % 360;
+  const sat = 55 + (h >> 8) % 25;
+  const light = 40 + (h >> 16) % 20;
+  return `hsl(${hue} ${sat}% ${light}%)`;
+}
+
+/* ---------- UI wiring ---------- */
+
+const dropCard = document.getElementById('dropCard');
+const fileInput = document.getElementById('fileInput');
+const dropErr = document.getElementById('dropErr');
+const dropScreen = document.getElementById('dropScreen');
+const editorScreen = document.getElementById('editorScreen');
+
+['dragenter', 'dragover'].forEach(evt =>
+  dropCard.addEventListener(evt, e => { e.preventDefault(); dropCard.classList.add('drag'); })
+);
+['dragleave', 'drop'].forEach(evt =>
+  dropCard.addEventListener(evt, e => { e.preventDefault(); dropCard.classList.remove('drag'); })
+);
+dropCard.addEventListener('drop', e => {
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) loadFile(file);
+});
+
+function loadFile(file) {
+  dropErr.textContent = '';
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const buf = new Uint8Array(evt.target.result);
+      schem = parseSchem(buf);
+      selectedChunk = schem.chunks.length ? 0 : -1;
+      currentLayer = 0;
+      document.getElementById('fileNameInput').value = file.name;
+      openEditor();
+    } catch (err) {
+      dropErr.textContent = err.message || 'Failed to parse this file.';
+    }
+  };
+  reader.onerror = () => { dropErr.textContent = 'Could not read the file.'; };
+  reader.readAsArrayBuffer(file);
+}
+
+function openEditor() {
+  dropScreen.style.display = 'none';
+  editorScreen.classList.add('active');
+  document.getElementById('nameInput').value = schem.name;
+  renderSidebar();
+  renderChunkSelection();
+}
+
+document.getElementById('btnLoadAnother').addEventListener('click', () => {
+  schem = null; selectedChunk = -1;
+  editorScreen.classList.remove('active');
+  dropScreen.style.display = 'flex';
+  fileInput.value = '';
+});
+
+document.getElementById('nameInput').addEventListener('input', e => {
+  schem.name = e.target.value;
+});
+
+function renderSidebar() {
+  const minX = Math.min(...schem.chunks.map(c => c.x), 0), maxX = Math.max(...schem.chunks.map(c => c.x), 0);
+  const minY = Math.min(...schem.chunks.map(c => c.y), 0), maxY = Math.max(...schem.chunks.map(c => c.y), 0);
+  const minZ = Math.min(...schem.chunks.map(c => c.z), 0), maxZ = Math.max(...schem.chunks.map(c => c.z), 0);
+  const sx = schem.chunks.length ? (maxX - minX + 1) * 32 : 0;
+  const sy = schem.chunks.length ? (maxY - minY + 1) * 32 : 0;
+  const sz = schem.chunks.length ? (maxZ - minZ + 1) * 32 : 0;
+  document.getElementById('statSize').textContent = `${sx} × ${sy} × ${sz}`;
+  document.getElementById('statChunks').textContent = schem.chunks.length;
+  let nonAir = 0;
+  for (const c of schem.chunks) for (const v of c.blocks) if (v !== 0) nonAir++;
+  document.getElementById('statBlocks').textContent = nonAir.toLocaleString();
+
+  const list = document.getElementById('chunkList');
+  list.innerHTML = '';
+  schem.chunks.forEach((c, i) => {
+    const item = document.createElement('div');
+    item.className = 'chunk-item' + (i === selectedChunk ? ' selected' : '');
+    item.innerHTML = `<span>${c.x}, ${c.y}, ${c.z}</span>`;
+    const del = document.createElement('button');
+    del.textContent = '✕';
+    del.title = 'Remove chunk';
+    del.onclick = ev => { ev.stopPropagation(); removeChunk(i); };
+    item.appendChild(del);
+    item.onclick = () => { selectedChunk = i; currentLayer = 0; renderChunkSelection(); };
+    list.appendChild(item);
+  });
+}
+
+function removeChunk(i) {
+  schem.chunks.splice(i, 1);
+  if (selectedChunk === i) selectedChunk = -1;
+  else if (selectedChunk > i) selectedChunk--;
+  renderSidebar();
+  renderChunkSelection();
+}
+
+document.getElementById('btnAddChunk').addEventListener('click', () => {
+  const x = parseInt(document.getElementById('addX').value, 10) || 0;
+  const y = parseInt(document.getElementById('addY').value, 10) || 0;
+  const z = parseInt(document.getElementById('addZ').value, 10) || 0;
+  if (schem.chunks.some(c => c.x === x && c.y === y && c.z === z)) {
+    alert('A chunk already exists at that coordinate.');
+    return;
+  }
+  schem.chunks.push({ x, y, z, blocks: new Uint16Array(CHUNK_BLOCKS) });
+  selectedChunk = schem.chunks.length - 1;
+  currentLayer = 0;
+  renderSidebar();
+  renderChunkSelection();
+});
+
+/* ---------- layer/canvas editing ---------- */
+
+const toolbar = document.getElementById('toolbar');
+const canvasWrap = document.getElementById('canvasWrap');
+const emptyState = document.getElementById('emptyState');
+const canvas = document.getElementById('gridCanvas');
+const ctx = canvas.getContext('2d');
+const layerInput = document.getElementById('layerInput');
+const layerSlider = document.getElementById('layerSlider');
+const blockIdInput = document.getElementById('blockIdInput');
+const paintSwatch = document.getElementById('paintSwatch');
+
+function renderChunkSelection() {
+  renderSidebar();
+  if (selectedChunk < 0) {
+    toolbar.style.display = 'none';
+    canvasWrap.style.display = 'none';
+    emptyState.style.display = 'flex';
+    return;
+  }
+  toolbar.style.display = 'flex';
+  canvasWrap.style.display = 'flex';
+  emptyState.style.display = 'none';
+  layerInput.value = currentLayer;
+  layerSlider.value = currentLayer;
+  drawGrid();
+  updateSwatch();
+}
+
+function updateSwatch() {
+  const id = parseInt(blockIdInput.value, 10) || 0;
+  const col = colorForId(id);
+  paintSwatch.style.background = col || 'repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 50% / 8px 8px';
+}
+blockIdInput.addEventListener('input', updateSwatch);
+
+function setLayer(n) {
+  currentLayer = Math.max(0, Math.min(31, n));
+  layerInput.value = currentLayer;
+  layerSlider.value = currentLayer;
+  drawGrid();
+}
+document.getElementById('layerUp').onclick = () => setLayer(currentLayer + 1);
+document.getElementById('layerDown').onclick = () => setLayer(currentLayer - 1);
+layerInput.addEventListener('input', () => setLayer(parseInt(layerInput.value, 10) || 0));
+layerSlider.addEventListener('input', () => setLayer(parseInt(layerSlider.value, 10) || 0));
+
+function drawGrid() {
+  const c = schem.chunks[selectedChunk];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let z = 0; z < 32; z++) {
+    for (let x = 0; x < 32; x++) {
+      const id = c.blocks[idxOf(x, currentLayer, z)];
+      const col = colorForId(id);
+      if (col) {
+        ctx.fillStyle = col;
+        ctx.fillRect(x * CELL, z * CELL, CELL, CELL);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.strokeRect(x * CELL, z * CELL, CELL, CELL);
+    }
+  }
+}
+
+function cellFromEvent(e) {
+  const rect = canvas.getBoundingClientRect();
+  const px = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const py = (e.clientY - rect.top) * (canvas.height / rect.height);
+  const x = Math.floor(px / CELL), z = Math.floor(py / CELL);
+  if (x < 0 || x > 31 || z < 0 || z > 31) return null;
+  return { x, z };
+}
+
+function paintAt(x, z) {
+  const c = schem.chunks[selectedChunk];
+  const id = eraseMode ? 0 : (parseInt(blockIdInput.value, 10) || 0);
+  c.blocks[idxOf(x, currentLayer, z)] = id;
+}
+
+canvas.addEventListener('mousedown', e => {
+  e.preventDefault();
+  eraseMode = e.button === 2;
+  painting = true;
+  const cell = cellFromEvent(e);
+  if (cell) { paintAt(cell.x, cell.z); drawGrid(); }
+});
+canvas.addEventListener('mousemove', e => {
+  if (!painting) return;
+  const cell = cellFromEvent(e);
+  if (cell) { paintAt(cell.x, cell.z); drawGrid(); }
+});
+window.addEventListener('mouseup', () => { painting = false; });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+document.getElementById('btnFillLayer').addEventListener('click', () => {
+  const c = schem.chunks[selectedChunk];
+  const id = parseInt(blockIdInput.value, 10) || 0;
+  for (let z = 0; z < 32; z++) for (let x = 0; x < 32; x++) c.blocks[idxOf(x, currentLayer, z)] = id;
+  drawGrid(); renderSidebar();
+});
+document.getElementById('btnClearLayer').addEventListener('click', () => {
+  const c = schem.chunks[selectedChunk];
+  for (let z = 0; z < 32; z++) for (let x = 0; x < 32; x++) c.blocks[idxOf(x, currentLayer, z)] = 0;
+  drawGrid(); renderSidebar();
+});
+document.getElementById('btnFillChunk').addEventListener('click', () => {
+  const c = schem.chunks[selectedChunk];
+  const id = parseInt(blockIdInput.value, 10) || 0;
+  c.blocks.fill(id);
+  drawGrid(); renderSidebar();
+});
+document.getElementById('btnClearChunk').addEventListener('click', () => {
+  const c = schem.chunks[selectedChunk];
+  c.blocks.fill(0);
+  drawGrid(); renderSidebar();
+});
+
+/* ---------- download ---------- */
+
+document.getElementById('btnDownload').addEventListener('click', () => {
+  let outName = document.getElementById('fileNameInput').value.trim() || 'edited.bloxdschem';
+  if (!outName.toLowerCase().endsWith('.bloxdschem')) outName += '.bloxdschem';
+  const binary = buildSchem(schem);
+  const blob = new Blob([binary], { type: 'application/octet-stream' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = outName;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
 </body>
 </html>
