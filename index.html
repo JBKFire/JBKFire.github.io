@@ -1,1145 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Bloxdschem Editor</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloxdSchem Text → .bloxdschem</title>
 <style>
-:root {
-  --panel: #171b26;
-  --panel-dark: #202638;
-  --bevel-hi: #2f3952;
-  --bevel-lo: #0a0d14;
-  --ink: #e8eefc;
-  --ink-soft: #8e9ab3;
-  --hover: #9bdcff;
-  --accent: #60a5fa;
-  --accent2: #38bdf8;
-  --danger: #f87171;
-  --world-a: #0b1220;
-  --world-b: #070b13;
-  --font: "Courier New", Consolas, monospace;
+:root{
+  --bg:#07101d; --panel:#101b2c; --panel2:#0c1625; --line:#263b59;
+  --text:#e9f2ff; --muted:#91a4bf; --accent:#5eb7ff; --accent2:#39d0ff;
+  --good:#61e294; --bad:#ff7d8a;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-family: var(--font);
-  color: var(--ink);
-  background:
-    radial-gradient(circle at 50% -10%, rgba(37, 99, 235, 0.16), transparent 35%),
-    repeating-linear-gradient(135deg, rgba(56, 189, 248, 0.025) 0 1px, transparent 1px 34px),
-    linear-gradient(180deg, var(--world-a), var(--world-b));
+*{box-sizing:border-box}
+body{
+  margin:0; min-height:100vh; color:var(--text); background:
+  radial-gradient(circle at 50% -20%,#15355c 0,transparent 42%),
+  linear-gradient(180deg,#07101d,#050a12);
+  font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
 }
-
-.mc-panel {
-  background: linear-gradient(180deg, #1b2030, #131722);
-  border: 1px solid #29334a;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255,255,255,0.035);
-  border-radius: 1px;
+header{
+  padding:22px 28px; border-bottom:1px solid var(--line);
+  background:rgba(5,12,22,.88); backdrop-filter:blur(8px);
 }
-
-.mc-btn {
-  font-family: var(--font);
-  background: #252d42;
-  color: #eaf2ff;
-  border: 1px solid #3a4764;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 12px rgba(0,0,0,0.18);
-  text-shadow: 0 1px 2px #000;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.02em;
+h1{margin:0 0 6px;font-size:21px;color:var(--accent)}
+header p{margin:0;color:var(--muted);font-size:13px}
+main{max-width:1200px;margin:0 auto;padding:24px}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.7fr);gap:18px}
+.panel{
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line); border-radius:8px; padding:18px;
+  box-shadow:0 16px 45px rgba(0,0,0,.25);
 }
-.mc-btn:hover { color: var(--hover); border-color: #4f8cff; background: #2a3650; }
-.mc-btn:active { transform: translateY(1px); }
-.mc-btn:disabled { opacity: 0.45; cursor: not-allowed; color: #ddd !important; }
-.mc-btn.danger { background: #5a2630; border-color: #7c3342; }
-.mc-btn.danger:hover { color: #ffb3b3; }
-.mc-btn.small { padding: 0.25rem 0.5rem; font-size: 0.72rem; }
-
-input[type=text], input[type=number] {
-  font-family: var(--font);
-  background: #0c111c;
-  color: #eef5ff;
-  border: 1px solid #33415d;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.45);
-  padding: 0.35rem 0.45rem;
-  font-size: 0.82rem;
+label{display:block;color:#b9c9df;font-size:12px;font-weight:700;margin-bottom:7px}
+textarea,input{
+  width:100%; border:1px solid #304865; border-radius:6px;
+  background:#07111f;color:#eef6ff;font:inherit;
+  padding:12px; outline:none;
 }
-input[type=text]:focus, input[type=number]:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
-
-header {
-  padding: 0.9rem 1.5rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  background: rgba(9, 14, 24, 0.96);
-  border-bottom: 1px solid #24324a;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.22);
+textarea{min-height:480px;resize:vertical;line-height:1.5}
+textarea:focus,input:focus{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(57,208,255,.12)}
+.field{margin-bottom:15px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+button{
+  border:1px solid #3d6590;background:#17304d;color:#eaf5ff;
+  border-radius:6px;padding:10px 13px;font:700 12px inherit;cursor:pointer;
 }
-header h1 {
-  font-size: 1.05rem;
-  color: var(--accent);
-  text-shadow: 1px 1px 0 #000;
-  letter-spacing: 0.02em;
+button:hover{background:#204263;border-color:#5b9ddd}
+button.primary{background:#12679b;border-color:#39baf3}
+button.primary:hover{background:#1680bd}
+button:disabled{opacity:.45;cursor:not-allowed}
+.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.status{
+  margin-top:13px;padding:10px 12px;border:1px solid var(--line);
+  border-radius:6px;background:#081423;color:var(--muted);font-size:12px;line-height:1.5;
 }
-header p { color: #9a9a9a; font-size: 0.78rem; }
-
-.layout { display: flex; flex: 1; min-height: 0; }
-
-#dropScreen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-.drop-card {
-  width: min(480px, 100%);
-  padding: 2.2rem 1.8rem;
-  text-align: center;
-  position: relative;
+.status.good{border-color:#296b49;color:#9ceab8}
+.status.bad{border-color:#73343f;color:#ffabb4}
+.help{color:var(--muted);font-size:12px;line-height:1.55}
+code{color:#bfe9ff}
+.preview{
+  margin-top:14px;padding:12px;background:#06101c;border:1px solid var(--line);
+  border-radius:6px;max-height:220px;overflow:auto;white-space:pre-wrap;
+  font-size:12px;color:#cfe5ff;
 }
-.drop-card input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.drop-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink); }
-.drop-sub { color: var(--ink-soft); font-size: 0.78rem; }
-.drop-err { color: #8b1f1f; font-size: 0.78rem; margin-top: 0.9rem; font-weight: 700; }
-
-#editorScreen { display: none; flex: 1; min-height: 0; }
-#editorScreen.active { display: flex; }
-
-aside {
-  width: 310px;
-  flex-shrink: 0;
-  overflow-y: auto;
-  padding: 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-aside > .mc-panel { padding: 0.85rem; }
-
-.field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.55rem; }
-.field label { font-size: 0.68rem; color: var(--ink-soft); text-transform: none; font-weight: 700; }
-.row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
-
-.section-title {
-  font-size: 0.72rem; font-weight: 700; color: var(--ink); margin-bottom: 0.5rem;
-  border-bottom: 2px solid var(--bevel-lo); padding-bottom: 0.3rem;
-}
-
-.stat-line { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 0.15rem 0; }
-.stat-line span:last-child { font-weight: 700; }
-
-.chunk-list { display: flex; flex-direction: column; gap: 0.3rem; max-height: 220px; overflow-y: auto; }
-.chunk-item {
-  display: flex; align-items: center; justify-content: space-between;
-  background: #20283a; border: 1px solid #34415c;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-  padding: 0.35rem 0.5rem; cursor: pointer; font-size: 0.76rem; color: #fff; text-shadow: 1px 1px 0 #2b2b2b;
-}
-.chunk-item:hover { color: var(--hover); }
-.chunk-item.selected { background: linear-gradient(90deg, #174e7a, #1f3151); border-color: #3b82f6; }
-.chunk-item button {
-  background: none; border: none; color: #eee; cursor: pointer; font-size: 0.85rem; line-height: 1; padding: 0 0.15rem;
-}
-.chunk-item button:hover { color: var(--danger); }
-
-.btn-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-
-.notice {
-  font-size: 0.72rem; line-height: 1.45; color: #b9d8ff; background: #101b2d;
-  border: 1px solid #28466f; padding: 0.55rem 0.65rem;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-}
-
-.download-bar { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
-.download-bar .field { flex: 1; min-width: 140px; margin-bottom: 0; }
-
-main.editor {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  overflow-y: auto;
-  padding: 0.9rem 1.2rem;
-  gap: 0.9rem;
-}
-
-.toolbar {
-  display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;
-  padding: 0.7rem 0.9rem;
-}
-.toolbar .field { margin-bottom: 0; min-width: 90px; }
-.swatch { width: 22px; height: 22px; border: 2px solid #1c1c1c; flex-shrink: 0; }
-.layer-nav { display: flex; align-items: center; gap: 0.35rem; }
-.layer-nav .mc-btn { width: 28px; height: 28px; padding: 0; }
-
-.view-row { display: flex; gap: 0.9rem; flex-wrap: wrap; align-items: flex-start; }
-
-.panel-3d {
-  flex: 1 1 420px;
-  min-width: 320px;
-  padding: 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.panel-3d-head { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-.panel-3d-head .section-title { border: none; margin: 0; padding: 0; }
-#canvas3dWrap { position: relative; background: #050914; border: 1px solid #263754; height: 420px; }
-#canvas3d { width: 100%; height: 100%; display: block; cursor: grab; }
-#canvas3d:active { cursor: grabbing; }
-.hud3d {
-  position: absolute; left: 0.5rem; bottom: 0.5rem;
-  font-size: 0.68rem; color: #bcd; background: rgba(0,0,0,0.55); padding: 0.3rem 0.5rem;
-  border: 1px solid #000; pointer-events: none;
-}
-
-.panel-2d {
-  flex: 0 0 auto;
-  padding: 0.8rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  align-items: center;
-}
-.panel-2d .section-title { align-self: stretch; }
-#gridCanvas { border: 1px solid #263754; cursor: crosshair; image-rendering: pixelated; background:#080d17; }
-
-
-
-.block-picker { display:flex; flex-direction:column; gap:0.55rem; }
-.block-picker-head { display:flex; gap:0.45rem; align-items:center; }
-.block-picker-head input { flex:1; min-width:0; }
-.block-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0.35rem; max-height:260px; overflow:auto; padding-right:2px; }
-.block-option { display:flex; align-items:center; gap:0.45rem; min-width:0; padding:0.35rem; background:#0d1421; border:1px solid #263754; color:#dce9ff; cursor:pointer; border-radius:4px; }
-.block-option:hover { border-color:#38bdf8; background:#111e31; }
-.block-option.selected { border-color:#60a5fa; box-shadow:0 0 0 1px #2563eb inset; background:#102541; }
-.block-option img { width:28px; height:28px; image-rendering:pixelated; object-fit:cover; flex:none; background:#111827; }
-.block-option span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:0.68rem; }
-.block-option small { color:#70819d; margin-left:auto; }
-.block-status { color:#7dd3fc; font-size:0.66rem; min-height:1em; }
-.block-id-row { display:grid; grid-template-columns:1fr auto; gap:0.4rem; align-items:end; }
-#blockNameDisplay { color:#dce9ff; font-size:0.74rem; min-height:1.1rem; }
-
-.empty-state {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  color: #cfcfcf; font-size: 0.85rem; text-align: center; padding: 2rem;
-}
+.small{font-size:11px;color:#7186a2}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+@media(max-width:850px){.grid{grid-template-columns:1fr}textarea{min-height:360px}}
 </style>
 </head>
 <body>
-
 <header>
-  <h1>Bloxdschem Editor</h1>
-  <p>Open a .bloxdschem file, preview it in textured 3D, paint blocks by name, save it back out.</p>
-  <span style="margin-left:auto;color:#5d789f;font-size:.68rem;">BLOXDY ASSET PACK · BLUE/BLACK EDITION</span>
+  <h1>BloxdSchem Text → .bloxdschem</h1>
+  <p>Paste a block-ID → coordinate-list object, then download a binary .bloxdschem file.</p>
 </header>
 
-<div class="layout">
+<main>
+  <div class="grid">
+    <section class="panel">
+      <label for="source">Block data</label>
+      <textarea id="source" spellcheck="false">{
 
-  <div id="dropScreen">
-    <div class="drop-card mc-panel">
-      <input type="file" id="fileInput" accept=".bloxdschem" />
-      <div class="drop-title">Click or drop a .bloxdschem file here</div>
-      <div class="drop-sub">Nothing leaves your browser — parsing and rendering happen locally.</div>
-      <div class="drop-err" id="dropErr"></div>
-    </div>
-  </div>
+}</textarea>
 
-  <div id="editorScreen">
-    <aside>
-      <div class="mc-panel">
-        <h2 class="section-title">Schematic</h2>
+      <div class="buttons">
+        <button id="example">Load example</button>
+        <button id="clear">Clear</button>
+        <button id="format">Format JSON</button>
+      </div>
+
+      <div id="status" class="status">Ready.</div>
+      <div class="preview" id="preview">Nothing converted yet.</div>
+    </section>
+
+    <aside class="panel">
+      <div class="field">
+        <label for="filename">Output filename</label>
+        <input id="filename" value="generated.bloxdschem">
+      </div>
+
+      <div class="row">
         <div class="field">
-          <label for="nameInput">Name</label>
-          <input type="text" id="nameInput" />
+          <label for="name">Schematic name</label>
+          <input id="name" value="Generated">
         </div>
-        <div class="stat-line"><span>Size (blocks)</span><span id="statSize">-</span></div>
-        <div class="stat-line"><span>Chunks</span><span id="statChunks">-</span></div>
-        <div class="stat-line"><span>Non-air blocks</span><span id="statBlocks">-</span></div>
-      </div>
-
-      <div class="mc-panel">
-        <h2 class="section-title">Block palette</h2>
-        <div class="block-picker">
-          <div class="block-picker-head">
-            <input type="text" id="sidebarBlockSearch" placeholder="Search blocks…" autocomplete="off" />
-          </div>
-          <div class="block-list" id="blockList"></div>
+        <div class="field">
+          <label for="magic">Magic (4 ASCII chars)</label>
+          <input id="magic" value="BDSC" maxlength="4">
         </div>
       </div>
 
-      <div class="mc-panel">
-        <h2 class="section-title">Chunks (32³ each)</h2>
-        <div class="chunk-list" id="chunkList"></div>
-        <div class="row3" style="margin-top:0.6rem;">
-          <input type="number" id="addX" placeholder="x" />
-          <input type="number" id="addY" placeholder="y" />
-          <input type="number" id="addZ" placeholder="z" />
+      <div class="field">
+        <label for="offsetX">Offset X / Y / Z</label>
+        <div class="row">
+          <input id="offsetX" type="number" value="0" aria-label="Offset X">
+          <input id="offsetY" type="number" value="0" aria-label="Offset Y">
         </div>
-        <div class="btn-row" style="margin-top:0.5rem;">
-          <button class="mc-btn small" id="btnAddChunk">Add chunk</button>
-        </div>
+        <input id="offsetZ" type="number" value="0" aria-label="Offset Z" style="margin-top:8px">
       </div>
 
-      <div class="notice">
-        Reverse-engineered format, not official docs. Footer bytes are preserved as-is; block axis order is an internally-consistent assumption. Test a small edit in-game before trusting anything big.
+      <button class="primary" id="download" style="width:100%">Download .bloxdschem</button>
+
+      <hr>
+      <div class="help">
+        <b>Input format</b><br><br>
+        Each key is a numeric block ID. Its value is an array of
+        <code>[x,y,z]</code> positions:
+        <br><br>
+        <code>{
+  "4": [[0,0,0],[1,1,1]],
+  "6": [[0,23,1],[1,4,1]]
+}</code>
+        <br><br>
+        Coordinates are automatically split into 32×32×32 chunks.
+        Empty positions become air (block ID 0).
       </div>
 
-      <div class="mc-panel" style="margin-top:auto;">
-        <h2 class="section-title">Save</h2>
-        <div class="download-bar">
-          <div class="field">
-            <label for="fileNameInput">File name</label>
-            <input type="text" id="fileNameInput" />
-          </div>
-        </div>
-        <div class="btn-row" style="margin-top:0.6rem;">
-          <button class="mc-btn" id="btnDownload">Download</button>
-          <button class="mc-btn small" id="btnLoadAnother">Open different file</button>
-        </div>
+      <div class="small" style="margin-top:16px">
+        The binary writer follows the chunk/RLE and Avro-style integer encoding used by the supplied reference editor.
       </div>
     </aside>
-
-    <main class="editor">
-      <div class="toolbar mc-panel" id="toolbar" style="display:none;">
-        <div class="field" style="min-width:280px; flex:1 1 320px;">
-          <label>Paint block</label>
-          <div class="block-id-row">
-            <input type="text" id="blockSearch" placeholder="Search block name…" autocomplete="off" />
-            <input type="number" id="blockIdInput" value="1" min="0" title="Block ID" style="width:82px;" />
-          </div>
-          <div id="blockNameDisplay">Loading block names…</div>
-          <div class="block-status" id="blockStatus"></div>
-        </div>
-        <div class="swatch" id="paintSwatch" title="Selected block texture"></div>
-        <div class="layer-nav">
-          <button class="mc-btn" id="layerDown">-</button>
-          <div class="field" style="min-width:64px;">
-            <label for="layerInput">Layer (Y)</label>
-            <input type="number" id="layerInput" value="0" min="0" max="31" />
-          </div>
-          <button class="mc-btn" id="layerUp">+</button>
-        </div>
-        <input type="range" id="layerSlider" min="0" max="31" value="0" style="flex:1; min-width:120px;" />
-        <div class="btn-row">
-          <button class="mc-btn small" id="btnFillLayer">Fill layer</button>
-          <button class="mc-btn small" id="btnClearLayer">Clear layer</button>
-          <button class="mc-btn small" id="btnFillChunk">Fill chunk</button>
-          <button class="mc-btn small danger" id="btnClearChunk">Clear chunk</button>
-        </div>
-      </div>
-
-      <div class="view-row" id="viewRow" style="display:none;">
-        <div class="panel-3d mc-panel">
-          <div class="panel-3d-head">
-            <h2 class="section-title">3D preview</h2>
-            <div class="btn-row">
-              <button class="mc-btn small" id="btnResetView">Reset view</button>
-            </div>
-          </div>
-          <div id="canvas3dWrap">
-            <canvas id="canvas3d"></canvas>
-            <div class="hud3d">drag to orbit · scroll to zoom · rendered blocks: <span id="stat3D">0</span></div>
-          </div>
-        </div>
-
-        <div class="panel-2d mc-panel">
-          <h2 class="section-title">Layer view (top-down)</h2>
-          <canvas id="gridCanvas" width="512" height="512"></canvas>
-        </div>
-      </div>
-
-      <div class="empty-state" id="emptyState">Select or add a chunk on the left to start editing.</div>
-    </main>
   </div>
-
-</div>
+</main>
 
 <script>
-/* ---------- binary helpers (mirrors the .bloxdschem writer format) ---------- */
+"use strict";
 
-function readVarintU(buf, off) {
-  let result = 0, shift = 0, i = off;
-  while (true) {
-    const b = buf[i++];
-    result |= (b & 0x7f) << shift;
-    if ((b & 0x80) === 0) break;
-    shift += 7;
-  }
-  return { value: result >>> 0, next: i };
+/*
+  Writer based on the supplied reference editor:
+  - 32^3 chunks
+  - flat index: y*1024 + z*32 + x
+  - block payload: unsigned-varint RLE pairs [runLength, blockId]
+  - header integers: Avro zig-zag int32
+  - trailing footer: empty for newly generated files
+*/
+
+const CHUNK_SIZE = 32;
+const CHUNK_BLOCKS = 32768;
+
+function concatBuffers(parts){
+  const total = parts.reduce((n,p)=>n+p.length,0);
+  const out = new Uint8Array(total);
+  let o=0;
+  for(const p of parts){ out.set(p,o); o+=p.length; }
+  return out;
 }
-function zigzagDecode32(n) { return (n >>> 1) ^ (-(n & 1)); }
-function readAvroInt32(buf, off) {
-  const r = readVarintU(buf, off);
-  return { value: zigzagDecode32(r.value), next: r.next };
-}
-function zigzagEncode32(n) { return (n << 1) ^ (n >> 31); }
-function avroInt32(n) {
+
+function zigzagEncode32(n){ return (n << 1) ^ (n >> 31); }
+
+function avroInt32(n){
+  n = Number(n);
+  if(!Number.isInteger(n) || n < -2147483648 || n > 2147483647)
+    throw new Error("Integer is outside signed int32 range.");
   let zz = zigzagEncode32(n) >>> 0;
-  const out = [];
-  while (zz >= 0x80) { out.push((zz & 0x7f) | 0x80); zz >>>= 7; }
+  const out=[];
+  while(zz >= 0x80){ out.push((zz & 0x7f)|0x80); zz >>>= 7; }
   out.push(zz & 0x7f);
   return new Uint8Array(out);
 }
-function uvarint(n) {
-  const out = [];
-  while (n >= 0x80) { out.push((n & 0x7f) | 0x80); n >>>= 7; }
+
+function uvarint(n){
+  n = Number(n);
+  if(!Number.isInteger(n) || n < 0 || n > 0xffffffff)
+    throw new Error("Block ID/run length must be an unsigned 32-bit integer.");
+  const out=[];
+  while(n >= 0x80){ out.push((n & 0x7f)|0x80); n >>>= 7; }
   out.push(n & 0x7f);
   return new Uint8Array(out);
 }
-function concatBuffers(bufs) {
-  const total = bufs.reduce((a, b) => a + b.length, 0);
-  const res = new Uint8Array(total);
-  let off = 0;
-  for (const b of bufs) { res.set(b, off); off += b.length; }
-  return res;
+
+function idxOf(x,y,z){ return y*1024 + z*32 + x; }
+
+function floorDiv(a,b){
+  return Math.floor(a/b);
 }
 
-const CHUNK_BLOCKS = 32 * 32 * 32; // 32768
-
-// Live references to the public Bloxd resources. The default pack JSON contains
-// the actual PNG data, while the generated block list is kept in block-id order.
-const DEFAULT_TEXTURE_PACK_URL = 'https://raw.githubusercontent.com/Bloxdy/texture-packs/main/_json/default.json';
-const BLOCK_ID_LIST_URL = 'https://gist.githubusercontent.com/owcer/ac2ef5a3140ca3207b5bfc9bed550340/raw/e927d68e22a2b98dda03b3dbdb8f73a5ab1fd322/bloxdbetterdocs.txt';
-let texturePack = {};
-let blockNames = ['Air'];
-let blockSearchIndex = [];
-let textureCache = new Map();
-let materialCache = new Map();
-let assetsReady = false;
-let assetsError = '';
-
-function decodeBlocks(bytes) {
-  const arr = new Uint16Array(CHUNK_BLOCKS);
-  let p = 0, idx = 0;
-  while (p < bytes.length && idx < CHUNK_BLOCKS) {
-    const rr = readVarintU(bytes, p); const run = rr.value; p = rr.next;
-    if (p >= bytes.length && run === 0) break;
-    const rb = readVarintU(bytes, p); const id = rb.value; p = rb.next;
-    for (let k = 0; k < run && idx < CHUNK_BLOCKS; k++) arr[idx++] = id;
-  }
-  return arr;
+function positiveMod(a,b){
+  return ((a % b) + b) % b;
 }
 
-function encodeBlocks(arr) {
-  const out = [];
-  let i = 0;
-  while (i < arr.length) {
-    let j = i + 1;
-    while (j < arr.length && arr[j] === arr[i]) j++;
-    out.push(uvarint(j - i));
+function encodeBlocks(arr){
+  const out=[];
+  let i=0;
+  while(i<arr.length){
+    let j=i+1;
+    while(j<arr.length && arr[j]===arr[i]) j++;
+    out.push(uvarint(j-i));
     out.push(uvarint(arr[i]));
-    i = j;
+    i=j;
   }
   return concatBuffers(out);
 }
 
-// index scheme for the flat 32768 array: idx = y*1024 + z*32 + x
-function idxOf(x, y, z) { return y * 1024 + z * 32 + x; }
+function parseInput(text){
+  let obj;
+  try{ obj=JSON.parse(text); }
+  catch(e){ throw new Error("Invalid JSON: " + e.message); }
 
-/* ---------- parse ---------- */
+  if(obj === null || Array.isArray(obj) || typeof obj !== "object")
+    throw new Error("The top level must be an object like { \"4\": [[0,0,0]] }.");
 
-function parseSchem(buf) {
-  let off = 0;
-  const magic = buf.slice(0, 4); off = 4;
-  const nameLen = readAvroInt32(buf, off); off = nameLen.next;
-  if (nameLen.value < 0 || nameLen.value > 10000 || off + nameLen.value > buf.length) {
-    throw new Error('Could not read the schematic name — this may not be a .bloxdschem file, or uses a layout this editor does not recognize.');
-  }
-  const name = new TextDecoder().decode(buf.subarray(off, off + nameLen.value)); off += nameLen.value;
+  const chunks = new Map();
+  let placed = 0;
 
-  const ox = readAvroInt32(buf, off); off = ox.next;
-  const oy = readAvroInt32(buf, off); off = oy.next;
-  const oz = readAvroInt32(buf, off); off = oz.next;
-  const sx = readAvroInt32(buf, off); off = sx.next;
-  const sy = readAvroInt32(buf, off); off = sy.next;
-  const sz = readAvroInt32(buf, off); off = sz.next;
+  for(const [idText, positions] of Object.entries(obj)){
+    if(!/^\d+$/.test(idText))
+      throw new Error(`Block ID "${idText}" is not a non-negative integer.`);
+    const id = Number(idText);
+    if(id > 0xffffffff)
+      throw new Error(`Block ID ${id} is too large.`);
 
-  const count = readAvroInt32(buf, off); off = count.next;
-  if (count.value < 0 || count.value > 100000) {
-    throw new Error('Unexpected chunk count while parsing — this file may not match the expected format.');
-  }
+    if(!Array.isArray(positions))
+      throw new Error(`Block ID ${id} must contain an array of [x,y,z] positions.`);
 
-  const chunks = [];
-  for (let i = 0; i < count.value; i++) {
-    const cx = readAvroInt32(buf, off); off = cx.next;
-    const cy = readAvroInt32(buf, off); off = cy.next;
-    const cz = readAvroInt32(buf, off); off = cz.next;
-    const blen = readAvroInt32(buf, off); off = blen.next;
-    if (blen.value < 0 || off + blen.value > buf.length) {
-      throw new Error('A chunk block payload ran past the end of the file — parsing stopped early.');
+    for(const pos of positions){
+      if(!Array.isArray(pos) || pos.length !== 3 ||
+         !pos.every(Number.isInteger))
+        throw new Error(`Invalid coordinate under block ${id}. Expected [x,y,z].`);
+
+      const [x,y,z]=pos;
+      const cx=floorDiv(x,CHUNK_SIZE), cy=floorDiv(y,CHUNK_SIZE), cz=floorDiv(z,CHUNK_SIZE);
+      const lx=positiveMod(x,CHUNK_SIZE), ly=positiveMod(y,CHUNK_SIZE), lz=positiveMod(z,CHUNK_SIZE);
+      const key=`${cx},${cy},${cz}`;
+
+      if(!chunks.has(key)){
+        chunks.set(key,{
+          x:cx,y:cy,z:cz,
+          blocks:new Uint32Array(CHUNK_BLOCKS)
+        });
+      }
+
+      const chunk=chunks.get(key);
+      const index=idxOf(lx,ly,lz);
+
+      // Later entries overwrite earlier entries, matching normal placement semantics.
+      if(chunk.blocks[index] !== id) placed++;
+      chunk.blocks[index]=id;
     }
-    const blockBytes = buf.subarray(off, off + blen.value); off += blen.value;
-    chunks.push({ x: cx.value, y: cy.value, z: cz.value, blocks: decodeBlocks(blockBytes) });
   }
 
-  const footer = buf.slice(off); // preserve whatever trailing bytes the file has, unchanged
-  return {
-    magic, name,
-    offset: [ox.value, oy.value, oz.value],
-    size: [sx.value, sy.value, sz.value],
-    chunks, footer
-  };
+  return {chunks:[...chunks.values()], placed};
 }
 
-function buildSchem(state) {
-  const parts = [];
-  parts.push(state.magic);
-  const nameBytes = new TextEncoder().encode(state.name);
+function asciiBytes(s){
+  if(s.length !== 4) throw new Error("Magic must be exactly 4 ASCII characters.");
+  const out=new Uint8Array(4);
+  for(let i=0;i<4;i++){
+    const c=s.charCodeAt(i);
+    if(c > 127) throw new Error("Magic must contain ASCII characters only.");
+    out[i]=c;
+  }
+  return out;
+}
+
+function buildSchem(parsed){
+  const name=document.getElementById("name").value || "Generated";
+  const magic=asciiBytes(document.getElementById("magic").value);
+  const ox=Number(document.getElementById("offsetX").value)||0;
+  const oy=Number(document.getElementById("offsetY").value)||0;
+  const oz=Number(document.getElementById("offsetZ").value)||0;
+
+  const parts=[magic];
+  const nameBytes=new TextEncoder().encode(name);
+
   parts.push(avroInt32(nameBytes.length), nameBytes);
-  parts.push(avroInt32(state.offset[0]), avroInt32(state.offset[1]), avroInt32(state.offset[2]));
+  parts.push(avroInt32(ox),avroInt32(oy),avroInt32(oz));
 
-  let sizeX = 32, sizeY = 32, sizeZ = 32;
-  if (state.chunks.length) {
-    const minX = Math.min(...state.chunks.map(c => c.x)), maxX = Math.max(...state.chunks.map(c => c.x));
-    const minY = Math.min(...state.chunks.map(c => c.y)), maxY = Math.max(...state.chunks.map(c => c.y));
-    const minZ = Math.min(...state.chunks.map(c => c.z)), maxZ = Math.max(...state.chunks.map(c => c.z));
-    sizeX = (maxX - minX + 1) * 32;
-    sizeY = (maxY - minY + 1) * 32;
-    sizeZ = (maxZ - minZ + 1) * 32;
+  let sizeX=32,sizeY=32,sizeZ=32;
+  if(parsed.chunks.length){
+    const xs=parsed.chunks.map(c=>c.x), ys=parsed.chunks.map(c=>c.y), zs=parsed.chunks.map(c=>c.z);
+    sizeX=(Math.max(...xs)-Math.min(...xs)+1)*32;
+    sizeY=(Math.max(...ys)-Math.min(...ys)+1)*32;
+    sizeZ=(Math.max(...zs)-Math.min(...zs)+1)*32;
   }
-  parts.push(avroInt32(sizeX), avroInt32(sizeY), avroInt32(sizeZ));
+  parts.push(avroInt32(sizeX),avroInt32(sizeY),avroInt32(sizeZ));
+  parts.push(avroInt32(parsed.chunks.length));
 
-  parts.push(avroInt32(state.chunks.length));
-  for (const c of state.chunks) {
-    const blockBytes = encodeBlocks(c.blocks);
-    parts.push(avroInt32(c.x), avroInt32(c.y), avroInt32(c.z));
-    parts.push(avroInt32(blockBytes.length), blockBytes);
+  for(const c of parsed.chunks){
+    const blockBytes=encodeBlocks(c.blocks);
+    parts.push(avroInt32(c.x),avroInt32(c.y),avroInt32(c.z));
+    parts.push(avroInt32(blockBytes.length),blockBytes);
   }
-  parts.push(state.footer);
+
+  // The supplied reference editor preserves an existing footer, but newly-created
+  // files have no known footer data, so we leave it empty.
   return concatBuffers(parts);
 }
 
-function normalizeTextureKey(name) {
-  let n = String(name || '').split('|')[0].trim();
-  if (!n || n === 'Air' || n === 'Unloaded') return null;
-  n = n.replace(/^_/, '');
-  const aliases = {
-    'Grass Block': 'grass_block_side',
-    'Maple Log': 'maple_log',
-    'Pine Log': 'pine_log',
-    'Plum Log': 'plum_log',
-    'Cedar Log': 'cedar_log',
-    'Aspen Log': 'aspen_log',
-    'Jungle Log': 'jungle_log',
-    'Pear Log': 'pear_log',
-    'Spectral Log': 'spectral_log',
-    'Barkless Maple Log': 'stripped_maple_log',
-    'Barkless Pine Log': 'stripped_pine_log',
-    'Barkless Plum Log': 'stripped_plum_log',
-    'Barkless Cedar Log': 'stripped_cedar_log',
-    'Barkless Aspen Log': 'stripped_aspen_log',
-    'Barkless Jungle Log': 'stripped_jungle_log',
-    'Barkless Pear Log': 'stripped_pear_log',
-    'Stone Bricks': 'stonebrick',
-    'Mossy Stone Bricks': 'stonebrick_mossy',
-    'Cracked Stone Bricks': 'stonebrick_cracked',
-    'Chiseled Block of Quartz': 'quartz_block_chiseled',
-    'Block of Quartz': 'quartz_block',
-    'Block of Diamond': 'diamond_block',
-    'Block of Emerald': 'emerald_block',
-    'Block of Iron': 'iron_block',
-    'Block of Gold': 'gold_block',
-    'Block of Coal': 'coal_block',
-    'Block of Lapis Lazuli': 'lapis_block',
-    'Water': 'water',
-    'Lava': 'lava',
-    'Glass': 'glass',
-    'White Wool': 'wool_colored_white',
-    'Light Gray Wool': 'wool_colored_light_grey'
-  };
-  if (aliases[n]) return aliases[n];
-  let key = n.toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  key = key.replace(/_stage\d+$/, m => m);
-  return key;
-}
+function pretty(obj){ return JSON.stringify(obj,null,4); }
 
-function textureCandidates(name) {
-  const root = String(name || '').split('|')[0].trim();
-  const k = normalizeTextureKey(root);
-  const out = [];
-  if (k) out.push(k);
-  if (root.includes('Wool')) {
-    const color = root.replace(/ Wool$/,'').toLowerCase().replace(/ /g,'_').replace('light_grey','light_gray');
-    out.push('wool_colored_' + color);
-  }
-  if (root === 'Grass Block') out.push('grass_block_side','grass_top');
-  if (/Slab$/.test(root)) out.push(k?.replace(/_slab$/,'_slab_side'), k?.replace(/_slab$/,'_slab_top'));
-  if (/Leaves$/.test(root)) out.push(k + '_side');
-  if (/Log$/.test(root)) out.push(k, k?.replace(/^barkless_/,'stripped_'));
-  return [...new Set(out.filter(Boolean))];
-}
+function updatePreview(){
+  const status=document.getElementById("status");
+  const preview=document.getElementById("preview");
+  try{
+    const parsed=parseInput(document.getElementById("source").value);
+    const binary=buildSchem(parsed);
+    const nonAir=parsed.chunks.reduce((n,c)=>{
+      let count=0; for(const v of c.blocks) if(v!==0) count++;
+      return n+count;
+    },0);
 
-function blockDisplayName(id) {
-  if (id === 0) return 'Air';
-  return blockNames[id] || `Unknown block #${id}`;
-}
-
-async function loadEditorAssets() {
-  const status = document.getElementById('blockStatus');
-  try {
-    status.textContent = 'Loading Bloxd textures + block names…';
-    const [packRes, namesRes] = await Promise.all([
-      fetch(DEFAULT_TEXTURE_PACK_URL, { cache: 'force-cache' }),
-      fetch(BLOCK_ID_LIST_URL, { cache: 'no-cache' })
-    ]);
-    if (!packRes.ok || !namesRes.ok) throw new Error('Could not fetch the Bloxd asset references.');
-    const pack = await packRes.json();
-    texturePack = pack.textures || {};
-    const txt = await namesRes.text();
-    const marker = 'File: ListOfBlocks.md';
-    const start = txt.indexOf(marker);
-    const section = start >= 0 ? txt.slice(start) : txt;
-    const match = section.match(/```\\s*([\\s\\S]*?)```/);
-    const lines = (match ? match[1] : section).split(/\\r?\\n/).map(v => v.trim()).filter(Boolean);
-    // The source states this generated list is in block-id order.
-    blockNames = ['Air', ...lines.filter(v => !/^\\[[0-9T:-]+\\]/.test(v)).map(v => v.replace(/^\\[[^\\]]+\\]\\s*/, ''))];
-    blockSearchIndex = blockNames.map((name, id) => ({ id, name, lower: name.toLowerCase() }));
-    assetsReady = true;
-    status.textContent = `Loaded ${Object.keys(texturePack).length.toLocaleString()} textures · ${Math.max(0, blockNames.length - 1).toLocaleString()} block names`;
-    renderBlockPalette();
-    updateBlockUI();
-    refresh3D(false);
-  } catch (err) {
-    assetsError = err.message || String(err);
-    status.textContent = 'Asset loading failed — using generated colors.';
-    blockNames = ['Air'];
-    blockSearchIndex = [];
-    renderBlockPalette();
-    updateBlockUI();
+    status.className="status good";
+    status.textContent=`Valid. ${parsed.chunks.length} chunk(s), ${nonAir.toLocaleString()} placed block(s), ${binary.length.toLocaleString()} bytes.`;
+    preview.textContent=
+      `Chunks:\\n`+
+      parsed.chunks.map(c=>`  (${c.x}, ${c.y}, ${c.z})`).join("\\n")+
+      `\\n\\nOutput size: ${binary.length.toLocaleString()} bytes`;
+    return {parsed,binary};
+  }catch(e){
+    status.className="status bad";
+    status.textContent=e.message;
+    preview.textContent="Fix the input/settings before downloading.";
+    return null;
   }
 }
 
-function getTextureDataForId(id) {
-  const name = blockDisplayName(id);
-  for (const key of textureCandidates(name)) {
-    if (texturePack[key]) return texturePack[key];
-  }
-  return null;
-}
+document.getElementById("example").onclick=()=>{
+  document.getElementById("source").value=`{
+    "4": [[0,0,0],[1,1,1]],
+    "6": [[0,23,1],[1,4,1]]
+}`;
+  updatePreview();
+};
 
-function getTextureForId(id) {
-  if (!assetsReady || id === 0) return null;
-  if (textureCache.has(id)) return textureCache.get(id);
-  const data = getTextureDataForId(id);
-  if (!data) return null;
-  const tex = new THREE.TextureLoader().load(data, () => { tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; tex.colorSpace = THREE.SRGBColorSpace; render3D(); });
-  tex.magFilter = THREE.NearestFilter;
-  tex.minFilter = THREE.NearestFilter;
-  tex.colorSpace = THREE.SRGBColorSpace;
-  textureCache.set(id, tex);
-  return tex;
-}
+document.getElementById("clear").onclick=()=>{
+  document.getElementById("source").value=`{
 
-function makeBlockMaterial(id) {
-  if (materialCache.has(id)) return materialCache.get(id);
-  const tex = getTextureForId(id);
-  const mat = new THREE.MeshPhongMaterial({ color: colorForId(id) || '#888888', flatShading: true, map: tex || null });
-  materialCache.set(id, mat);
-  return mat;
-}
+}`;
+  updatePreview();
+};
 
-function updateBlockUI() {
-  const id = Math.max(0, parseInt(blockIdInput.value, 10) || 0);
-  document.getElementById('blockNameDisplay').textContent = `${blockDisplayName(id)} · ID ${id}`;
-  updateSwatch();
-  document.querySelectorAll('.block-option').forEach(el => el.classList.toggle('selected', Number(el.dataset.id) === id));
-}
+document.getElementById("format").onclick=()=>{
+  try{
+    const obj=JSON.parse(document.getElementById("source").value);
+    document.getElementById("source").value=pretty(obj);
+    updatePreview();
+  }catch(e){ updatePreview(); }
+};
 
-function renderBlockPalette() {
-  const list = document.getElementById('blockList');
-  if (!list) return;
-  const query = (document.getElementById('sidebarBlockSearch')?.value || document.getElementById('blockSearch')?.value || '').trim().toLowerCase();
-  const matches = blockSearchIndex.filter(x => !query || x.lower.includes(query)).slice(0, 160);
-  list.innerHTML = '';
-  for (const item of matches) {
-    if (item.id === 0) continue;
-    const el = document.createElement('button');
-    el.type = 'button';
-    el.className = 'block-option';
-    el.dataset.id = item.id;
-    const img = document.createElement('img');
-    const data = getTextureDataForId(item.id);
-    if (data) img.src = data;
-    const span = document.createElement('span');
-    span.textContent = item.name;
-    const small = document.createElement('small');
-    small.textContent = item.id;
-    el.append(img, span, small);
-    el.onclick = () => setPaintBlock(item.id);
-    list.appendChild(el);
-  }
-  updateBlockUI();
-}
-
-function setPaintBlock(id) {
-  blockIdInput.value = Math.max(0, id | 0);
-  updateBlockUI();
-  renderBlockPalette();
-}
-
-function colorForId(id) {
-  if (id === 0) return null; // air
-  let h = (id * 2654435761) >>> 0;
-  const hue = h % 360;
-  const sat = 55 + (h >> 8) % 25;
-  const light = 40 + (h >> 16) % 20;
-  return `hsl(${hue} ${sat}% ${light}%)`;
-}
-
-/* ---------- app state ---------- */
-
-let schem = null;
-let selectedChunk = -1;
-let currentLayer = 0;
-let painting = false;
-let eraseMode = false;
-let dirtyFor3D = false;
-
-const CELL = 16; // px per cell, 32 cells -> 512px canvas
-
-/* ---------- 2D / upload / sidebar UI ---------- */
-
-const dropCard = document.querySelector('.drop-card');
-const fileInput = document.getElementById('fileInput');
-const dropErr = document.getElementById('dropErr');
-const dropScreen = document.getElementById('dropScreen');
-const editorScreen = document.getElementById('editorScreen');
-
-['dragenter', 'dragover'].forEach(evt =>
-  dropCard.addEventListener(evt, e => { e.preventDefault(); dropCard.style.outline = '2px dashed ' + getComputedStyle(document.documentElement).getPropertyValue('--accent2'); })
-);
-['dragleave', 'drop'].forEach(evt =>
-  dropCard.addEventListener(evt, e => { e.preventDefault(); dropCard.style.outline = 'none'; })
-);
-dropCard.addEventListener('drop', e => {
-  const file = e.dataTransfer.files[0];
-  if (file) loadFile(file);
-});
-fileInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) loadFile(file);
+document.getElementById("source").addEventListener("input",updatePreview);
+["name","magic","offsetX","offsetY","offsetZ"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",updatePreview);
 });
 
-function loadFile(file) {
-  dropErr.textContent = '';
-  const reader = new FileReader();
-  reader.onload = evt => {
-    try {
-      const buf = new Uint8Array(evt.target.result);
-      schem = parseSchem(buf);
-      selectedChunk = schem.chunks.length ? 0 : -1;
-      currentLayer = 0;
-      document.getElementById('fileNameInput').value = file.name;
-      openEditor();
-    } catch (err) {
-      dropErr.textContent = err.message || 'Failed to parse this file.';
-    }
-  };
-  reader.onerror = () => { dropErr.textContent = 'Could not read the file.'; };
-  reader.readAsArrayBuffer(file);
-}
+document.getElementById("download").onclick=()=>{
+  const result=updatePreview();
+  if(!result) return;
 
-function openEditor() {
-  dropScreen.style.display = 'none';
-  editorScreen.classList.add('active');
-  document.getElementById('nameInput').value = schem.name;
-  if (!threeReady) initThree();
-  renderSidebar();
-  renderChunkSelection();
-  refresh3D(true);
-}
+  let filename=document.getElementById("filename").value.trim() || "generated.bloxdschem";
+  if(!filename.toLowerCase().endsWith(".bloxdschem")) filename+=".bloxdschem";
 
-document.getElementById('btnLoadAnother').addEventListener('click', () => {
-  schem = null; selectedChunk = -1;
-  editorScreen.classList.remove('active');
-  dropScreen.style.display = 'flex';
-  fileInput.value = '';
-});
-
-document.getElementById('nameInput').addEventListener('input', e => { schem.name = e.target.value; });
-
-function renderSidebar() {
-  const minX = Math.min(...schem.chunks.map(c => c.x), 0), maxX = Math.max(...schem.chunks.map(c => c.x), 0);
-  const minY = Math.min(...schem.chunks.map(c => c.y), 0), maxY = Math.max(...schem.chunks.map(c => c.y), 0);
-  const minZ = Math.min(...schem.chunks.map(c => c.z), 0), maxZ = Math.max(...schem.chunks.map(c => c.z), 0);
-  const sx = schem.chunks.length ? (maxX - minX + 1) * 32 : 0;
-  const sy = schem.chunks.length ? (maxY - minY + 1) * 32 : 0;
-  const sz = schem.chunks.length ? (maxZ - minZ + 1) * 32 : 0;
-  document.getElementById('statSize').textContent = `${sx} × ${sy} × ${sz}`;
-  document.getElementById('statChunks').textContent = schem.chunks.length;
-  let nonAir = 0;
-  for (const c of schem.chunks) for (const v of c.blocks) if (v !== 0) nonAir++;
-  document.getElementById('statBlocks').textContent = nonAir.toLocaleString();
-
-  const list = document.getElementById('chunkList');
-  list.innerHTML = '';
-  schem.chunks.forEach((c, i) => {
-    const item = document.createElement('div');
-    item.className = 'chunk-item' + (i === selectedChunk ? ' selected' : '');
-    item.innerHTML = `<span>${c.x}, ${c.y}, ${c.z}</span>`;
-    const del = document.createElement('button');
-    del.textContent = '✕';
-    del.title = 'Remove chunk';
-    del.onclick = ev => { ev.stopPropagation(); removeChunk(i); };
-    item.appendChild(del);
-    item.onclick = () => { selectedChunk = i; currentLayer = 0; renderChunkSelection(); updateSelectionHelpers(); render3D(); };
-    list.appendChild(item);
-  });
-}
-
-function removeChunk(i) {
-  schem.chunks.splice(i, 1);
-  if (selectedChunk === i) selectedChunk = -1;
-  else if (selectedChunk > i) selectedChunk--;
-  renderSidebar();
-  renderChunkSelection();
-  refresh3D(false);
-}
-
-document.getElementById('btnAddChunk').addEventListener('click', () => {
-  const x = parseInt(document.getElementById('addX').value, 10) || 0;
-  const y = parseInt(document.getElementById('addY').value, 10) || 0;
-  const z = parseInt(document.getElementById('addZ').value, 10) || 0;
-  if (schem.chunks.some(c => c.x === x && c.y === y && c.z === z)) {
-    alert('A chunk already exists at that coordinate.');
-    return;
-  }
-  schem.chunks.push({ x, y, z, blocks: new Uint16Array(CHUNK_BLOCKS) });
-  selectedChunk = schem.chunks.length - 1;
-  currentLayer = 0;
-  renderSidebar();
-  renderChunkSelection();
-  refresh3D(false);
-});
-
-const toolbar = document.getElementById('toolbar');
-const viewRow = document.getElementById('viewRow');
-const emptyState = document.getElementById('emptyState');
-const canvas = document.getElementById('gridCanvas');
-const ctx = canvas.getContext('2d');
-const layerInput = document.getElementById('layerInput');
-const layerSlider = document.getElementById('layerSlider');
-const blockIdInput = document.getElementById('blockIdInput');
-const paintSwatch = document.getElementById('paintSwatch');
-
-function renderChunkSelection() {
-  renderSidebar();
-  if (selectedChunk < 0) {
-    toolbar.style.display = 'none';
-    viewRow.style.display = 'none';
-    emptyState.style.display = 'flex';
-    return;
-  }
-  toolbar.style.display = 'flex';
-  viewRow.style.display = 'flex';
-  emptyState.style.display = 'none';
-  layerInput.value = currentLayer;
-  layerSlider.value = currentLayer;
-  drawGrid();
-  updateBlockUI();
-}
-
-function updateSwatch() {
-  const id = parseInt(blockIdInput.value, 10) || 0;
-  const data = getTextureDataForId(id);
-  if (data) {
-    paintSwatch.style.background = `url("${data}") center / cover`;
-    paintSwatch.style.imageRendering = 'pixelated';
-  } else {
-    const col = colorForId(id);
-    paintSwatch.style.background = col || 'repeating-conic-gradient(#1f2937 0% 25%, #0f172a 0% 50%) 50% / 8px 8px';
-  }
-}
-blockIdInput.addEventListener('input', updateBlockUI);
-blockIdInput.addEventListener('change', () => { updateBlockUI(); renderBlockPalette(); });
-document.getElementById('blockSearch').addEventListener('input', e => {
-  document.getElementById('sidebarBlockSearch').value = e.target.value;
-  renderBlockPalette();
-});
-document.getElementById('sidebarBlockSearch').addEventListener('input', e => {
-  document.getElementById('blockSearch').value = e.target.value;
-  renderBlockPalette();
-});
-
-function setLayer(n) {
-  currentLayer = Math.max(0, Math.min(31, n));
-  layerInput.value = currentLayer;
-  layerSlider.value = currentLayer;
-  drawGrid();
-  updateSelectionHelpers();
-  render3D();
-}
-document.getElementById('layerUp').onclick = () => setLayer(currentLayer + 1);
-document.getElementById('layerDown').onclick = () => setLayer(currentLayer - 1);
-layerInput.addEventListener('input', () => setLayer(parseInt(layerInput.value, 10) || 0));
-layerSlider.addEventListener('input', () => setLayer(parseInt(layerSlider.value, 10) || 0));
-
-function drawGrid() {
-  const c = schem.chunks[selectedChunk];
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let z = 0; z < 32; z++) {
-    for (let x = 0; x < 32; x++) {
-      const id = c.blocks[idxOf(x, currentLayer, z)];
-      const col = colorForId(id);
-      if (col) {
-        ctx.fillStyle = col;
-        ctx.fillRect(x * CELL, z * CELL, CELL, CELL);
-      }
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.strokeRect(x * CELL, z * CELL, CELL, CELL);
-    }
-  }
-}
-
-function cellFromEvent(e) {
-  const rect = canvas.getBoundingClientRect();
-  const px = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const py = (e.clientY - rect.top) * (canvas.height / rect.height);
-  const x = Math.floor(px / CELL), z = Math.floor(py / CELL);
-  if (x < 0 || x > 31 || z < 0 || z > 31) return null;
-  return { x, z };
-}
-
-function paintAt(x, z) {
-  const c = schem.chunks[selectedChunk];
-  const id = eraseMode ? 0 : (parseInt(blockIdInput.value, 10) || 0);
-  c.blocks[idxOf(x, currentLayer, z)] = id;
-  dirtyFor3D = true;
-}
-
-canvas.addEventListener('mousedown', e => {
-  e.preventDefault();
-  eraseMode = e.button === 2;
-  painting = true;
-  const cell = cellFromEvent(e);
-  if (cell) { paintAt(cell.x, cell.z); drawGrid(); }
-});
-canvas.addEventListener('mousemove', e => {
-  if (!painting) return;
-  const cell = cellFromEvent(e);
-  if (cell) { paintAt(cell.x, cell.z); drawGrid(); }
-});
-window.addEventListener('mouseup', () => {
-  painting = false;
-  if (dirtyFor3D) { dirtyFor3D = false; refresh3D(false); renderSidebar(); }
-});
-canvas.addEventListener('contextmenu', e => e.preventDefault());
-
-document.getElementById('btnFillLayer').addEventListener('click', () => {
-  const c = schem.chunks[selectedChunk];
-  const id = parseInt(blockIdInput.value, 10) || 0;
-  for (let z = 0; z < 32; z++) for (let x = 0; x < 32; x++) c.blocks[idxOf(x, currentLayer, z)] = id;
-  drawGrid(); renderSidebar(); refresh3D(false);
-});
-document.getElementById('btnClearLayer').addEventListener('click', () => {
-  const c = schem.chunks[selectedChunk];
-  for (let z = 0; z < 32; z++) for (let x = 0; x < 32; x++) c.blocks[idxOf(x, currentLayer, z)] = 0;
-  drawGrid(); renderSidebar(); refresh3D(false);
-});
-document.getElementById('btnFillChunk').addEventListener('click', () => {
-  const c = schem.chunks[selectedChunk];
-  const id = parseInt(blockIdInput.value, 10) || 0;
-  c.blocks.fill(id);
-  drawGrid(); renderSidebar(); refresh3D(false);
-});
-document.getElementById('btnClearChunk').addEventListener('click', () => {
-  const c = schem.chunks[selectedChunk];
-  c.blocks.fill(0);
-  drawGrid(); renderSidebar(); refresh3D(false);
-});
-
-document.getElementById('btnDownload').addEventListener('click', () => {
-  let outName = document.getElementById('fileNameInput').value.trim() || 'edited.bloxdschem';
-  if (!outName.toLowerCase().endsWith('.bloxdschem')) outName += '.bloxdschem';
-  const binary = buildSchem(schem);
-  const blob = new Blob([binary], { type: 'application/octet-stream' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = outName;
+  const blob=new Blob([result.binary],{type:"application/octet-stream"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(a.href);
-});
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
 
-/* ---------- 3D preview (Three.js) ---------- */
-
-let threeReady = false;
-let scene, camera, renderer;
-let blockGroup, selectionBox, layerPlane;
-let unitBoxGeometry;
-let camAngleX = 0.55, camAngleY = 0.8, camDistance = 60;
-let camTarget = new THREE.Vector3(16, 16, 16);
-let render3DOrigin = [0, 0, 0];
-
-function initThree() {
-  threeReady = true;
-  const canvas3d = document.getElementById('canvas3d');
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050914);
-
-  camera = new THREE.PerspectiveCamera(50, 1, 0.1, 2000);
-
-  renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  const ambient = new THREE.AmbientLight(0xffffff, 0.55);
-  scene.add(ambient);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.85);
-  dir.position.set(40, 80, 60);
-  scene.add(dir);
-  const dir2 = new THREE.DirectionalLight(0x88aaff, 0.25);
-  dir2.position.set(-40, -20, -60);
-  scene.add(dir2);
-
-  const grid = new THREE.GridHelper(256, 32, 0x24527a, 0x10253a);
-  scene.add(grid);
-
-  blockGroup = new THREE.Group();
-  scene.add(blockGroup);
-
-  unitBoxGeometry = new THREE.BoxGeometry(1, 1, 1);
-
-  const wrap = document.getElementById('canvas3dWrap');
-  let dragging = false, lastX = 0, lastY = 0;
-  wrap.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
-  window.addEventListener('mouseup', () => { dragging = false; });
-  window.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const dx = e.clientX - lastX, dy = e.clientY - lastY;
-    lastX = e.clientX; lastY = e.clientY;
-    camAngleY -= dx * 0.008;
-    camAngleX = Math.max(-1.45, Math.min(1.45, camAngleX + dy * 0.008));
-    updateCameraPos(); render3D();
-  });
-  wrap.addEventListener('wheel', e => {
-    e.preventDefault();
-    camDistance = Math.max(6, Math.min(600, camDistance * (1 + e.deltaY * 0.001)));
-    updateCameraPos(); render3D();
-  }, { passive: false });
-
-  document.getElementById('btnResetView').addEventListener('click', () => { refresh3D(true); });
-
-  window.addEventListener('resize', () => { resizeRenderer(); render3D(); });
-  resizeRenderer();
-  updateCameraPos();
-}
-
-function resizeRenderer() {
-  const wrap = document.getElementById('canvas3dWrap');
-  const w = wrap.clientWidth, h = wrap.clientHeight;
-  if (!w || !h) return;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-}
-
-function updateCameraPos() {
-  const x = camTarget.x + camDistance * Math.cos(camAngleX) * Math.sin(camAngleY);
-  const y = camTarget.y + camDistance * Math.sin(camAngleX);
-  const z = camTarget.z + camDistance * Math.cos(camAngleX) * Math.cos(camAngleY);
-  camera.position.set(x, y, z);
-  camera.lookAt(camTarget);
-}
-
-function render3D() {
-  if (!threeReady) return;
-  renderer.render(scene, camera);
-}
-
-function refresh3D(fitCamera) {
-  if (!threeReady) return;
-  while (blockGroup.children.length) {
-    const m = blockGroup.children.pop();
-    // Materials/textures are cached per block id and intentionally retained.
-  }
-  if (!schem || !schem.chunks.length) {
-    document.getElementById('stat3D').textContent = '0';
-    updateSelectionHelpers();
-    return;
-  }
-
-  const minX = Math.min(...schem.chunks.map(c => c.x));
-  const minY = Math.min(...schem.chunks.map(c => c.y));
-  const minZ = Math.min(...schem.chunks.map(c => c.z));
-  const maxX = Math.max(...schem.chunks.map(c => c.x));
-  const maxY = Math.max(...schem.chunks.map(c => c.y));
-  const maxZ = Math.max(...schem.chunks.map(c => c.z));
-  render3DOrigin = [minX, minY, minZ];
-
-  const byId = new Map();
-  let total = 0;
-  for (const c of schem.chunks) {
-    const baseX = (c.x - minX) * 32, baseY = (c.y - minY) * 32, baseZ = (c.z - minZ) * 32;
-    for (let y = 0; y < 32; y++) {
-      for (let z = 0; z < 32; z++) {
-        for (let x = 0; x < 32; x++) {
-          const id = c.blocks[idxOf(x, y, z)];
-          if (id === 0) continue;
-          if (!byId.has(id)) byId.set(id, []);
-          byId.get(id).push(baseX + x, baseY + y, baseZ + z);
-          total++;
-        }
-      }
-    }
-  }
-  document.getElementById('stat3D').textContent = total.toLocaleString();
-
-  const dummy = new THREE.Object3D();
-  for (const [id, coords] of byId.entries()) {
-    const count = coords.length / 3;
-    const mat = makeBlockMaterial(id);
-    const mesh = new THREE.InstancedMesh(unitBoxGeometry, mat, count);
-    for (let i = 0; i < count; i++) {
-      dummy.position.set(coords[i * 3] + 0.5, coords[i * 3 + 1] + 0.5, coords[i * 3 + 2] + 0.5);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-    }
-    mesh.instanceMatrix.needsUpdate = true;
-    blockGroup.add(mesh);
-  }
-
-  if (fitCamera) {
-    const spanX = (maxX - minX + 1) * 32, spanY = (maxY - minY + 1) * 32, spanZ = (maxZ - minZ + 1) * 32;
-    camTarget.set(spanX / 2, spanY / 2, spanZ / 2);
-    camDistance = Math.max(spanX, spanY, spanZ) * 1.6 + 10;
-    camAngleX = 0.55; camAngleY = 0.8;
-    updateCameraPos();
-  }
-
-  updateSelectionHelpers();
-}
-
-function updateSelectionHelpers() {
-  if (!threeReady) return;
-  if (selectionBox) { scene.remove(selectionBox); selectionBox.geometry.dispose(); selectionBox.material.dispose(); selectionBox = null; }
-  if (layerPlane) { scene.remove(layerPlane); layerPlane.geometry.dispose(); layerPlane.material.dispose(); layerPlane = null; }
-  if (selectedChunk < 0 || !schem || !schem.chunks.length) { render3D(); return; }
-
-  const c = schem.chunks[selectedChunk];
-  const [minX, minY, minZ] = render3DOrigin;
-  const bx = (c.x - minX) * 32, by = (c.y - minY) * 32, bz = (c.z - minZ) * 32;
-
-  const boxGeo = new THREE.BoxGeometry(32, 32, 32);
-  const edges = new THREE.EdgesGeometry(boxGeo);
-  selectionBox = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x5cd6ff }));
-  selectionBox.position.set(bx + 16, by + 16, bz + 16);
-  scene.add(selectionBox);
-  boxGeo.dispose();
-
-  const planeGeo = new THREE.PlaneGeometry(32, 32);
-  const planeMat = new THREE.MeshBasicMaterial({ color: 0x55ff55, opacity: 0.18, transparent: true, side: THREE.DoubleSide, depthWrite: false });
-  layerPlane = new THREE.Mesh(planeGeo, planeMat);
-  layerPlane.rotation.x = -Math.PI / 2;
-  layerPlane.position.set(bx + 16, by + currentLayer + 0.51, bz + 16);
-  scene.add(layerPlane);
-
-  render3D();
-}
+updatePreview();
 </script>
 </body>
 </html>
