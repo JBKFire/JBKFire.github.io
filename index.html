@@ -305,7 +305,43 @@ function buildSchem(parsed){
   return concatBuffers(parts);
 }
 
-function pretty(obj){ return JSON.stringify(obj,null,4); }
+function pretty(obj){
+  const indentUnit = "    ";
+
+  function formatValue(value, level){
+    if(Array.isArray(value)){
+      if(value.length === 0) return "[]";
+
+      // Coordinate arrays such as [0,0,0] stay on one line.
+      if(value.every(v => typeof v === "number" && Number.isFinite(v))){
+        return "[" + value.join(",") + "]";
+      }
+
+      const indent = indentUnit.repeat(level);
+      const childIndent = indentUnit.repeat(level + 1);
+      return "[\n" +
+        value.map(v => childIndent + formatValue(v, level + 1)).join(",\n") +
+        "\n" + indent + "]";
+    }
+
+    if(value !== null && typeof value === "object"){
+      const keys = Object.keys(value);
+      if(keys.length === 0) return "{}";
+
+      const indent = indentUnit.repeat(level);
+      const childIndent = indentUnit.repeat(level + 1);
+      return "{\n" +
+        keys.map(key =>
+          childIndent + JSON.stringify(key) + ": " + formatValue(value[key], level + 1)
+        ).join(",\n") +
+        "\n" + indent + "}";
+    }
+
+    return JSON.stringify(value);
+  }
+
+  return formatValue(obj, 0);
+}
 
 function updatePreview(){
   const status=document.getElementById("status");
