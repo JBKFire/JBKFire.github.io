@@ -103,8 +103,8 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
           <input id="name" value="Generated">
         </div>
         <div class="field">
-          <label for="magic">Magic (4 ASCII chars)</label>
-          <input id="magic" value="BDSC" maxlength="4">
+          <label for="magic">Format version (integer)</label>
+          <input id="magic" type="number" value="5" min="0" step="1">
         </div>
       </div>
 
@@ -260,20 +260,23 @@ function parseInput(text){
   return {chunks:[...chunks.values()], placed};
 }
 
-function asciiBytes(s){
-  if(s.length !== 4) throw new Error("Magic must be exactly 4 ASCII characters.");
-  const out=new Uint8Array(4);
-  for(let i=0;i<4;i++){
-    const c=s.charCodeAt(i);
-    if(c > 127) throw new Error("Magic must contain ASCII characters only.");
-    out[i]=c;
-  }
+function versionBytes(v){
+  v = Number(v);
+  if(!Number.isInteger(v) || v < 0 || v > 0xffffffff)
+    throw new Error("Format version must be an unsigned 32-bit integer.");
+  // Real .bloxdschem files start with a raw little-endian uint32 version
+  // field (observed value 5 in reference files) — NOT 4 ASCII characters.
+  const out = new Uint8Array(4);
+  out[0] = v & 0xff;
+  out[1] = (v >>> 8) & 0xff;
+  out[2] = (v >>> 16) & 0xff;
+  out[3] = (v >>> 24) & 0xff;
   return out;
 }
 
 function buildSchem(parsed){
   const name=document.getElementById("name").value || "Generated";
-  const magic=asciiBytes(document.getElementById("magic").value);
+  const magic=versionBytes(document.getElementById("magic").value);
   const ox=Number(document.getElementById("offsetX").value)||0;
   const oy=Number(document.getElementById("offsetY").value)||0;
   const oz=Number(document.getElementById("offsetZ").value)||0;
