@@ -220,6 +220,7 @@ function parseInput(text){
 
   const chunks = new Map();
   let placed = 0;
+  let bounds = null;
 
   for(const [idText, positions] of Object.entries(obj)){
     if(!/^\d+$/.test(idText))
@@ -237,6 +238,16 @@ function parseInput(text){
         throw new Error(`Invalid coordinate under block ${id}. Expected [x,y,z].`);
 
       const [x,y,z]=pos;
+      if(bounds===null){
+        bounds={minX:x,maxX:x,minY:y,maxY:y,minZ:z,maxZ:z};
+      }else{
+        if(x<bounds.minX) bounds.minX=x;
+        if(x>bounds.maxX) bounds.maxX=x;
+        if(y<bounds.minY) bounds.minY=y;
+        if(y>bounds.maxY) bounds.maxY=y;
+        if(z<bounds.minZ) bounds.minZ=z;
+        if(z>bounds.maxZ) bounds.maxZ=z;
+      }
       const cx=floorDiv(x,CHUNK_SIZE), cy=floorDiv(y,CHUNK_SIZE), cz=floorDiv(z,CHUNK_SIZE);
       const lx=positiveMod(x,CHUNK_SIZE), ly=positiveMod(y,CHUNK_SIZE), lz=positiveMod(z,CHUNK_SIZE);
       const key=`${cx},${cy},${cz}`;
@@ -257,7 +268,7 @@ function parseInput(text){
     }
   }
 
-  return {chunks:[...chunks.values()], placed};
+  return {chunks:[...chunks.values()], placed, bounds};
 }
 
 function versionBytes(v){
@@ -287,12 +298,13 @@ function buildSchem(parsed){
   parts.push(avroInt32(nameBytes.length), nameBytes);
   parts.push(avroInt32(ox),avroInt32(oy),avroInt32(oz));
 
-  let sizeX=32,sizeY=32,sizeZ=32;
-  if(parsed.chunks.length){
-    const xs=parsed.chunks.map(c=>c.x), ys=parsed.chunks.map(c=>c.y), zs=parsed.chunks.map(c=>c.z);
-    sizeX=(Math.max(...xs)-Math.min(...xs)+1)*32;
-    sizeY=(Math.max(...ys)-Math.min(...ys)+1)*32;
-    sizeZ=(Math.max(...zs)-Math.min(...zs)+1)*32;
+  // Real files store the actual bounding-box dimensions of the placed
+  // blocks (e.g. 21x13x21), not the chunk span rounded up to 32.
+  let sizeX=0,sizeY=0,sizeZ=0;
+  if(parsed.bounds){
+    sizeX=parsed.bounds.maxX-parsed.bounds.minX+1;
+    sizeY=parsed.bounds.maxY-parsed.bounds.minY+1;
+    sizeZ=parsed.bounds.maxZ-parsed.bounds.minZ+1;
   }
   parts.push(avroInt32(sizeX),avroInt32(sizeY),avroInt32(sizeZ));
   parts.push(avroInt32(parsed.chunks.length));
